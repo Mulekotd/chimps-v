@@ -5,11 +5,10 @@
 
 ## 1. Visão do projeto
 
-**CHIMPS-V** é uma ferramenta educacional, empacotada em Docker, para montar,
-executar e observar ciclo a ciclo uma microarquitetura RISC-V própria. A aplicação
-deve tornar visíveis o caminho de dados, unidade de controle, registradores,
-pipeline, caches, memória e I/O, conectando cada instrução a seus efeitos de
-hardware e métricas de desempenho.
+**CHIMPS-V** é uma ferramenta, para montar, executar e observar ciclo a ciclo
+uma microarquitetura RISC-V própria. A aplicação deve tornar visíveis o caminho de dados,
+unidade de controle, registradores, pipeline, caches, memória e I/O, conectando cada instrução
+a seus efeitos de hardware e métricas de desempenho.
 
 O resultado não é apenas um emulador de ISA: é um simulador de uma
 **microarquitetura explícita**, com estado temporal e sinais observáveis. A
@@ -35,18 +34,18 @@ ser usadas como oráculos de teste, mas não substituem os circuitos do processa
 
 ## 2. Decisões arquiteturais iniciais
 
-| Item | Decisão de referência | Justificativa |
-|---|---|---|
-| ISA visível | `RV32IMF_Zicsr` (RV32I + multiplicação/divisão + ponto flutuante single + CSRs mínimos) | Escopo educacional realista, 32 bits simplificam endereçamento e o `F` cumpre o requisito de IEEE 754. |
-| Endereçamento | 32 bits, byte-addressable, little-endian | Convenção comum e plenamente definida pela especificação RISC-V. |
-| Registros | 32 GPRs de 32 bits (`x0` permanentemente zero); 32 FPRs de 32 bits | Segue RV32I/F. |
-| Pipeline | 5 estágios in-order: IF, ID, EX, MEM, WB | Visual, didático e suficiente para demonstrar hazards. |
-| FPU | Unidade RTL dedicada, multi-ciclo, não pipeline inicialmente | Mantém o caminho crítico da ALU curto e torna latência/ocupação visíveis. |
-| Memória | RAM unificada de dados e instruções, mapeada em memória | Implementa Von Neumann. |
-| Caches L1 | I-cache e D-cache separadas, configuráveis, com backing na mesma RAM | Não transforma a máquina em Harvard: a memória primária continua única; separar L1 elimina a contenção IF×MEM e torna a demonstração mais clara. |
-| I/O | MMIO com buffers FIFO de entrada e saída | Modela periféricos sem criar instruções fora da ISA. |
-| Interface | TUI interativa de terminal | Atende à GUI pedida sem exigir servidor gráfico e funciona bem em Docker. |
-| Empacotamento | Docker/Compose, execução sem dependência de instalação local | Reproduzibilidade da demonstração e avaliação. |
+| Item          | Decisão de referência                                                                   | Justificativa                                                                                                                                    |
+| ------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ISA visível   | `RV32IMF_Zicsr` (RV32I + multiplicação/divisão + ponto flutuante single + CSRs mínimos) | Escopo educacional realista, 32 bits simplificam endereçamento e o `F` cumpre o requisito de IEEE 754.                                           |
+| Endereçamento | 32 bits, byte-addressable, little-endian                                                | Convenção comum e plenamente definida pela especificação RISC-V.                                                                                 |
+| Registros     | 32 GPRs de 32 bits (`x0` permanentemente zero); 32 FPRs de 32 bits                      | Segue RV32I/F.                                                                                                                                   |
+| Pipeline      | 5 estágios in-order: IF, ID, EX, MEM, WB                                                | Visual, didático e suficiente para demonstrar hazards.                                                                                           |
+| FPU           | Unidade RTL dedicada, multi-ciclo, não pipeline inicialmente                            | Mantém o caminho crítico da ALU curto e torna latência/ocupação visíveis.                                                                        |
+| Memória       | RAM unificada de dados e instruções, mapeada em memória                                 | Implementa Von Neumann.                                                                                                                          |
+| Caches L1     | I-cache e D-cache separadas, configuráveis, com backing na mesma RAM                    | Não transforma a máquina em Harvard: a memória primária continua única; separar L1 elimina a contenção IF×MEM e torna a demonstração mais clara. |
+| I/O           | MMIO com buffers FIFO de entrada e saída                                                | Modela periféricos sem criar instruções fora da ISA.                                                                                             |
+| Interface     | TUI interativa de terminal                                                              | Atende à GUI pedida sem exigir servidor gráfico e funciona bem em Docker.                                                                        |
+| Empacotamento | Docker/Compose, execução sem dependência de instalação local                            | Reproduzibilidade da demonstração e avaliação.                                                                                                   |
 
 ### Escopo funcional por marco
 
@@ -73,15 +72,15 @@ ser duplicada em “memória de instruções” e “memória de dados”.
 
 Proposta de mapa inicial (constantes configuráveis e documentadas no código):
 
-| Faixa | Uso |
-|---|---|
-| `0x0000_0000`–`0x0000_FFFF` | código, dados estáticos e heap educacional |
-| `0x0001_0000`–`0x0001_7FFF` | stack (cresce para baixo) |
-| `0xFFFF_0000` | `UART_TX_DATA`: escrita de byte entra no FIFO de saída |
-| `0xFFFF_0004` | `UART_TX_STATUS`: espaço disponível / ocupado |
-| `0xFFFF_0008` | `UART_RX_DATA`: leitura remove byte do FIFO de entrada |
-| `0xFFFF_000C` | `UART_RX_STATUS`: há byte disponível |
-| `0xFFFF_0010` | `SIM_CONTROL`: halt/exit para o ambiente do simulador |
+| Faixa                       | Uso                                                    |
+| --------------------------- | ------------------------------------------------------ |
+| `0x0000_0000`–`0x0000_FFFF` | código, dados estáticos e heap educacional             |
+| `0x0001_0000`–`0x0001_7FFF` | stack (cresce para baixo)                              |
+| `0xFFFF_0000`               | `UART_TX_DATA`: escrita de byte entra no FIFO de saída |
+| `0xFFFF_0004`               | `UART_TX_STATUS`: espaço disponível / ocupado          |
+| `0xFFFF_0008`               | `UART_RX_DATA`: leitura remove byte do FIFO de entrada |
+| `0xFFFF_000C`               | `UART_RX_STATUS`: há byte disponível                   |
+| `0xFFFF_0010`               | `SIM_CONTROL`: halt/exit para o ambiente do simulador  |
 
 Definir formalmente a política para endereços desalinhados: na versão 1, detectar
 e produzir trap/erro do simulador para acessos `LH/LW/FLW` desalinhados, em vez de
@@ -110,15 +109,15 @@ em uma segunda implementação.
 
 ### 3.3 Pipeline e hazards
 
-| Situação | Política inicial verificável |
-|---|---|
-| RAW de ALU | forwarding EX/MEM e MEM/WB para os operandos da EX |
-| load-use | 1 bolha: congelar PC e IF/ID, injetar NOP em ID/EX |
-| branch/JAL/JALR tomado | resolução em EX, invalidar instruções mais jovens em IF/ID e ID/EX; contar flush |
-| cache miss | congelar estágios que dependem da transação; preservar registradores válidos |
-| FPU/MUL/DIV ocupado | instrução produtora bloqueia o avanço necessário; nenhuma escrita fora de WB |
-| store | efeitos de memória ocorrem apenas quando a instrução chega a MEM válida |
-| exceção/halt | estado preciso: instruções mais jovens são anuladas; nenhuma instrução mais velha é perdida |
+| Situação               | Política inicial verificável                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| RAW de ALU             | forwarding EX/MEM e MEM/WB para os operandos da EX                                          |
+| load-use               | 1 bolha: congelar PC e IF/ID, injetar NOP em ID/EX                                          |
+| branch/JAL/JALR tomado | resolução em EX, invalidar instruções mais jovens em IF/ID e ID/EX; contar flush            |
+| cache miss             | congelar estágios que dependem da transação; preservar registradores válidos                |
+| FPU/MUL/DIV ocupado    | instrução produtora bloqueia o avanço necessário; nenhuma escrita fora de WB                |
+| store                  | efeitos de memória ocorrem apenas quando a instrução chega a MEM válida                     |
+| exceção/halt           | estado preciso: instruções mais jovens são anuladas; nenhuma instrução mais velha é perdida |
 
 Usar sempre bits `valid`, `stall` e `flush` explícitos nos registradores de
 pipeline. O trace deve incluir, por estágio, `pc`, instrução, `valid`, motivo do
@@ -133,15 +132,15 @@ isso com um preditor de 1 bit, sem alterar o comportamento arquitetural.
 Implementar os metadados e o datapath de cache em RTL (tag RAM, data RAM,
 valid/dirty e comparadores). Parâmetros sugeridos para a configuração padrão:
 
-| Parâmetro | I-cache | D-cache |
-|---|---:|---:|
-| Capacidade | 1 KiB | 1 KiB |
-| Associatividade | mapeamento direto | 2 vias |
-| Linha | 16 B | 16 B |
-| Política de escrita | somente leitura | write-back + write-allocate |
-| Substituição | n/a | pseudo-LRU por conjunto (ou round-robin no MVP) |
-| Latência de hit | 1 ciclo | 1 ciclo |
-| Penalidade de miss | configurável; padrão 10 ciclos | configurável; padrão 10 ciclos + write-back se dirty |
+| Parâmetro           |                        I-cache |                                              D-cache |
+| ------------------- | -----------------------------: | ---------------------------------------------------: |
+| Capacidade          |                          1 KiB |                                                1 KiB |
+| Associatividade     |              mapeamento direto |                                               2 vias |
+| Linha               |                           16 B |                                                 16 B |
+| Política de escrita |                somente leitura |                          write-back + write-allocate |
+| Substituição        |                            n/a |      pseudo-LRU por conjunto (ou round-robin no MVP) |
+| Latência de hit     |                        1 ciclo |                                              1 ciclo |
+| Penalidade de miss  | configurável; padrão 10 ciclos | configurável; padrão 10 ciclos + write-back se dirty |
 
 Regras a especificar e testar: decomposição de endereço (tag/index/offset), refill
 de linha, seleção de vítima, write-back antes do refill, dados de store no miss,
@@ -248,13 +247,13 @@ teste de unidade/RTL pertinente, evidência de execução e entrada no changelog
 
 ### 6.2 Pirâmide TDD e verificação
 
-| Nível | O que comprovar | Exemplos |
-|---|---|---|
-| Unidade | funções puras do montador e blocos RTL isolados | imediato B/J, ALU, registrador x0, FIFO, tag/index/offset, round/sticky |
-| Módulo RTL | protocolo por ciclo e invariantes | cache refill/write-back, hazard unit, FPU `busy/done`, RAM/MMIO |
-| Integração | caminho completo programa → estado | `lw` seguido de `add`, branch tomado, saída UART, miss de cache |
-| Arquitetural | semântica da ISA declarada | `riscv-arch-test`/`riscv-tests`, assinaturas e programas dirigidos |
-| Aceitação TUI/Docker | fluxo do usuário e reprodutibilidade | container monta, executa exemplo e exporta trace sem intervenção |
+| Nível                | O que comprovar                                 | Exemplos                                                                |
+| -------------------- | ----------------------------------------------- | ----------------------------------------------------------------------- |
+| Unidade              | funções puras do montador e blocos RTL isolados | imediato B/J, ALU, registrador x0, FIFO, tag/index/offset, round/sticky |
+| Módulo RTL           | protocolo por ciclo e invariantes               | cache refill/write-back, hazard unit, FPU `busy/done`, RAM/MMIO         |
+| Integração           | caminho completo programa → estado              | `lw` seguido de `add`, branch tomado, saída UART, miss de cache         |
+| Arquitetural         | semântica da ISA declarada                      | `riscv-arch-test`/`riscv-tests`, assinaturas e programas dirigidos      |
+| Aceitação TUI/Docker | fluxo do usuário e reprodutibilidade            | container monta, executa exemplo e exporta trace sem intervenção        |
 
 Prática obrigatória por mudança: escrever o teste que falha, implementar o mínimo,
 refatorar com todos os testes verdes. Todo bug ganha teste de regressão. O CI deve
@@ -326,14 +325,14 @@ build; artefatos de demonstração e traces podem ser exportados.
 
 ## 9. Roadmap com entregáveis e gates
 
-| Fase | Entregável | Gate de aceite |
-|---|---|---|
-| 0 — Fundação | ADRs, `specs/`, estrutura, Docker e CI | `docker compose … test` verde em checkout limpo |
-| 1 — ISA/montador | RV32I definido, montador, loader e listagem | encoding/diagnósticos testados; exemplos montam |
-| 2 — Núcleo base | PC, GPR, ALU, RAM, pipeline e TUI de passo | programas RV32I e hazards têm trace esperado |
-| 3 — Caches/I-O | L1s, MMIO/FIFOs e painel de métricas | testes de hit/miss/write-back/FIFO e demo reproduzível |
-| 4 — M e F | unidades multi-ciclo, FPR/fcsr e IEEE 754 | vetores bit-a-bit, flags e stalls corretos |
-| 5 — Qualidade | regressão arquitetural, cobertura e documentação | CI verde; roteiro de apresentação executado no Docker |
+| Fase             | Entregável                                       | Gate de aceite                                         |
+| ---------------- | ------------------------------------------------ | ------------------------------------------------------ |
+| 0 — Fundação     | ADRs, `specs/`, estrutura, Docker e CI           | `docker compose … test` verde em checkout limpo        |
+| 1 — ISA/montador | RV32I definido, montador, loader e listagem      | encoding/diagnósticos testados; exemplos montam        |
+| 2 — Núcleo base  | PC, GPR, ALU, RAM, pipeline e TUI de passo       | programas RV32I e hazards têm trace esperado           |
+| 3 — Caches/I-O   | L1s, MMIO/FIFOs e painel de métricas             | testes de hit/miss/write-back/FIFO e demo reproduzível |
+| 4 — M e F        | unidades multi-ciclo, FPR/fcsr e IEEE 754        | vetores bit-a-bit, flags e stalls corretos             |
+| 5 — Qualidade    | regressão arquitetural, cobertura e documentação | CI verde; roteiro de apresentação executado no Docker  |
 
 Prioridade de demonstrações: (1) `lw`→uso imediato para bolha e forwarding; (2)
 branch tomado para flush; (3) acesso repetido e conflitante para cache; (4) eco de
@@ -357,69 +356,67 @@ O projeto estará pronto para demonstração quando:
 
 ## 11. Riscos, limites e mitigação
 
-| Risco | Impacto | Mitigação |
-|---|---|---|
-| Escopo de `F` e divisão/raiz | Alto | Entregar RV32I+pipeline+caches primeiro; projetar FPU multi-ciclo por etapas e declarar suporte real. |
-| Diferença entre estado final e timing | Alto | trace por ciclo, assertions e testes de aceitação com contagens exatas. |
-| Cache complexo demais | Médio | começar com I$ direta e D$ direta; evoluir D$ para 2 vias após write-back testado. |
-| TUI consumir o cronograma | Médio | separar modelo de apresentação; primeiro CLI/headless + export, depois TUI. |
-| Docker não reproduz build | Alto | CI constrói imagem do zero e executa smoke test em toda mudança. |
-| Implementação “simulada em software” | Alto | RTL é fonte do estado microarquitetural; harness/TUI apenas dirige/observa RTL. |
+| Risco                                 | Impacto | Mitigação                                                                                             |
+| ------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
+| Escopo de `F` e divisão/raiz          | Alto    | Entregar RV32I+pipeline+caches primeiro; projetar FPU multi-ciclo por etapas e declarar suporte real. |
+| Diferença entre estado final e timing | Alto    | trace por ciclo, assertions e testes de aceitação com contagens exatas.                               |
+| Cache complexo demais                 | Médio   | começar com I$ direta e D$ direta; evoluir D$ para 2 vias após write-back testado.                    |
+| TUI consumir o cronograma             | Médio   | separar modelo de apresentação; primeiro CLI/headless + export, depois TUI.                           |
+| Docker não reproduz build             | Alto    | CI constrói imagem do zero e executa smoke test em toda mudança.                                      |
+| Implementação “simulada em software”  | Alto    | RTL é fonte do estado microarquitetural; harness/TUI apenas dirige/observa RTL.                       |
 
 ## 12. Referências
 
 ### Especificações e testes primários
 
-1. RISC-V International. *The RISC-V Instruction Set Manual, Volume I:
-   Unprivileged Architecture*, Ratified Specifications Library, versão
+1. RISC-V International. _The RISC-V Instruction Set Manual, Volume I:
+   Unprivileged Architecture_, Ratified Specifications Library, versão
    2026-01-20. https://docs.riscv.org/reference/isa/
-2. RISC-V International. *RV32I Base Integer Instruction Set, Version 2.1*.
+2. RISC-V International. _RV32I Base Integer Instruction Set, Version 2.1_.
    https://docs.riscv.org/reference/isa/v20260120/unpriv/rv32.html
-3. RISC-V International. *“M” Extension for Integer Multiplication and Division*.
+3. RISC-V International. _“M” Extension for Integer Multiplication and Division_.
    https://docs.riscv.org/reference/isa/unpriv/m-st-ext.html
-4. RISC-V International. *“F” Extension for Single-Precision Floating-Point,
-   Version 2.2*. https://docs.riscv.org/reference/isa/unpriv/f-st-ext.html
-5. RISC-V International. *The RISC-V Instruction Set Manual, Volume II:
-   Privileged Architecture* (consultar somente Machine mode/CSRs que forem
+4. RISC-V International. _“F” Extension for Single-Precision Floating-Point,
+   Version 2.2_. https://docs.riscv.org/reference/isa/unpriv/f-st-ext.html
+5. RISC-V International. _The RISC-V Instruction Set Manual, Volume II:
+   Privileged Architecture_ (consultar somente Machine mode/CSRs que forem
    declarados no escopo). https://docs.riscv.org/reference/isa/priv/priv-index.html
-6. IEEE. *IEEE Std 754-2019 — IEEE Standard for Floating-Point Arithmetic*, 2019;
+6. IEEE. _IEEE Std 754-2019 — IEEE Standard for Floating-Point Arithmetic_, 2019;
    ISO/IEC/IEEE 60559:2020. https://standards.ieee.org/ieee/754/6210/
-7. RISC-V International. *RISC-V Architectural Certification Tests
-   (`riscv-arch-test`)*. https://github.com/riscv/riscv-arch-test
-8. RISC-V Software Source. *riscv-tests*. https://github.com/riscv-software-src/riscv-tests
-9. Hauser, John R. *Berkeley SoftFloat Release 3e: Library Interface*, 2018.
+7. RISC-V International. _RISC-V Architectural Certification Tests
+   (`riscv-arch-test`)_. https://github.com/riscv/riscv-arch-test
+8. RISC-V Software Source. _riscv-tests_. https://github.com/riscv-software-src/riscv-tests
+9. Hauser, John R. _Berkeley SoftFloat Release 3e: Library Interface_, 2018.
    https://www.jhauser.us/arithmetic/SoftFloat.html (oráculo para testes FP, não
    implementação do núcleo).
 
 ### Livros fundamentais
 
-10. Patterson, David A.; Hennessy, John L. *Computer Organization and Design
-    RISC-V Edition: The Hardware Software Interface*, 2nd ed., Morgan Kaufmann,
-    2020. ISBN 978-0128203316.
-11. Hennessy, John L.; Patterson, David A. *Computer Architecture: A Quantitative
-    Approach*, 6th ed., Morgan Kaufmann, 2019. ISBN 978-0128119051.
-12. Harris, Sarah L.; Harris, David M. *Digital Design and Computer Architecture:
-    RISC-V Edition*, Morgan Kaufmann, 2021. ISBN 978-0128200643.
-13. Mano, M. Morris; Ciletti, Michael D. *Digital Design*, 6th ed., Pearson, 2017.
+10. Patterson, David A.; Hennessy, John L. _Computer Organization and Design
+    RISC-V Edition: The Hardware Software Interface_, 2nd ed., Morgan Kaufmann, 2020. ISBN 978-0128203316.
+11. Hennessy, John L.; Patterson, David A. _Computer Architecture: A Quantitative
+    Approach_, 6th ed., Morgan Kaufmann, 2019. ISBN 978-0128119051.
+12. Harris, Sarah L.; Harris, David M. _Digital Design and Computer Architecture:
+    RISC-V Edition_, Morgan Kaufmann, 2021. ISBN 978-0128200643.
+13. Mano, M. Morris; Ciletti, Michael D. _Digital Design_, 6th ed., Pearson, 2017.
     ISBN 978-0134549897.
 
 ### Artigos e práticas de engenharia
 
-14. Smith, Alan J. “Cache Memories.” *ACM Computing Surveys*, 14(3), 473–530,
-    1982. https://doi.org/10.1145/356887.356892
+14. Smith, Alan J. “Cache Memories.” _ACM Computing Surveys_, 14(3), 473–530, 1982. https://doi.org/10.1145/356887.356892
 15. Tomasulo, Robert M. “An Efficient Algorithm for Exploiting Multiple Arithmetic
-    Units.” *IBM Journal of Research and Development*, 11(1), 25–33, 1967.
+    Units.” _IBM Journal of Research and Development_, 11(1), 25–33, 1967.
     https://doi.org/10.1147/rd.111.0025 (referência conceitual; OoO não integra o
     escopo inicial).
 16. Tullsen, Dean M.; Brown, Michael Q.; Voelker, Geoffrey M. “Use of architectural
-    simulation tools in education.” *WCAE ’95*, 1995.
+    simulation tools in education.” _WCAE ’95_, 1995.
     https://doi.org/10.1145/1275225.1275232
-17. Beck, Kent. *Test Driven Development: By Example*. Addison-Wesley, 2002.
+17. Beck, Kent. _Test Driven Development: By Example_. Addison-Wesley, 2002.
     ISBN 978-0321146533.
-18. RFC Editor. *RFC 2119: Key words for use in RFCs to Indicate Requirement
-    Levels*, 1997. https://www.rfc-editor.org/rfc/rfc2119 (vocabulário MUST/SHALL
+18. RFC Editor. _RFC 2119: Key words for use in RFCs to Indicate Requirement
+    Levels_, 1997. https://www.rfc-editor.org/rfc/rfc2119 (vocabulário MUST/SHALL
     das especificações do projeto).
-19. Docker. *Dockerfile reference* e *Compose specification*.
+19. Docker. _Dockerfile reference_ e _Compose specification_.
     https://docs.docker.com/reference/dockerfile/ e https://docs.docker.com/compose/
 
 ## 13. Próxima ação recomendada
