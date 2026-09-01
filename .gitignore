@@ -1,0 +1,5 @@
+/build/
+/*.vcd
+*.o
+*.log
+*.cf
