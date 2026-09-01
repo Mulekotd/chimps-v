@@ -1,0 +1,20 @@
+services:
+  cli:
+    build:
+      context: .
+      dockerfile: dockerfiles/cli/Dockerfile
+    image: chimps-v-cli:local
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    command: ["make", "-C", "cli", "test"]
+
+  rtl:
+    build:
+      context: .
+      dockerfile: dockerfiles/rtl/Dockerfile
+    image: chimps-v-rtl:local
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    command: ["scripts/compile-rtl.sh"]
