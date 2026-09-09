@@ -43,18 +43,21 @@ begin
                 if load_enable = '1' then
                     index := word_index(load_address);
                     updated_word := memory(index);
-                    if load_byte_enable(0) = '1' then updated_word(7 downto 0) := load_data(7 downto 0); end if;
+
+                if load_byte_enable(0) = '1' then updated_word(7 downto 0) := load_data(7 downto 0); end if;
                     if load_byte_enable(1) = '1' then updated_word(15 downto 8) := load_data(15 downto 8); end if;
                     if load_byte_enable(2) = '1' then updated_word(23 downto 16) := load_data(23 downto 16); end if;
                     if load_byte_enable(3) = '1' then updated_word(31 downto 24) := load_data(31 downto 24); end if;
                 else
                     index := word_index(data_address);
                     updated_word := memory(index);
+
                     if data_byte_enable(0) = '1' then updated_word(7 downto 0) := data_write_data(7 downto 0); end if;
                     if data_byte_enable(1) = '1' then updated_word(15 downto 8) := data_write_data(15 downto 8); end if;
                     if data_byte_enable(2) = '1' then updated_word(23 downto 16) := data_write_data(23 downto 16); end if;
                     if data_byte_enable(3) = '1' then updated_word(31 downto 24) := data_write_data(31 downto 24); end if;
                 end if;
+
                 memory(index) <= updated_word;
             end if;
         end if;

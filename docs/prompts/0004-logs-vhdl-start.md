@@ -1,4 +1,4 @@
-# Log 0005 — Início da implementação em VHDL
+# Log 0004 — Início da implementação em VHDL
 
 - Data: 2026-09-08
 - Tipo: prompt/output

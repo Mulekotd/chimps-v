@@ -18,23 +18,27 @@ begin
     begin
         a <= x"00000002"; b <= x"00000003"; operation <= ALU_ADD;
         wait for 1 ns;
+
         assert result = x"00000005" report "ALU_ADD failed" severity error;
 
         a <= x"00000007"; b <= x"00000003"; operation <= ALU_SUB;
         wait for 1 ns;
+
         assert result = x"00000004" report "ALU_SUB failed" severity error;
         assert zero = '0' report "ALU zero flag failed" severity error;
 
         a <= x"FFFFFFFF"; b <= x"00000001"; operation <= ALU_ADD;
         wait for 1 ns;
+
         assert result = x"00000000" report "ALU overflow wrap failed" severity error;
         assert zero = '1' report "ALU zero flag on zero result failed" severity error;
 
         a <= x"FFFFFFFF"; b <= x"00000001"; operation <= ALU_SLT;
         wait for 1 ns;
-        assert result = x"00000001" report "ALU signed less-than failed" severity error;
 
+        assert result = x"00000001" report "ALU signed less-than failed" severity error;
         assert false report "tb_alu completed" severity note;
+
         wait;
     end process;
 end Behavioral;

@@ -7,33 +7,30 @@ use work.chimps_pkg.ALL;
 -- O mesmo circuito pode ser instanciado como I-cache ou D-cache.
 entity l1_direct_mapped_cache is
     Port (
-        clk              : in  STD_LOGIC;
-        rst              : in  STD_LOGIC;
-
+        clk               : in  STD_LOGIC;
+        rst               : in  STD_LOGIC;
         -- Interface de requisição do lado da CPU.
-        cpu_valid        : in  STD_LOGIC;
-        cpu_write        : in  STD_LOGIC;
-        cpu_address      : in  STD_LOGIC_VECTOR(31 downto 0);
-        cpu_write_data   : in  STD_LOGIC_VECTOR(31 downto 0);
-        cpu_write_mask   : in  STD_LOGIC_VECTOR(3 downto 0);
-        cpu_ready        : out STD_LOGIC;
-        cpu_read_data    : out STD_LOGIC_VECTOR(31 downto 0);
-        cpu_error        : out STD_LOGIC;
-
+        cpu_valid         : in  STD_LOGIC;
+        cpu_write         : in  STD_LOGIC;
+        cpu_address       : in  STD_LOGIC_VECTOR(31 downto 0);
+        cpu_write_data    : in  STD_LOGIC_VECTOR(31 downto 0);
+        cpu_write_mask    : in  STD_LOGIC_VECTOR(3 downto 0);
+        cpu_ready         : out STD_LOGIC;
+        cpu_read_data     : out STD_LOGIC_VECTOR(31 downto 0);
+        cpu_error         : out STD_LOGIC;
         -- Interface de requisição da memória backing.
-        memory_valid    : out STD_LOGIC;
-        memory_write    : out STD_LOGIC;
-        memory_address  : out STD_LOGIC_VECTOR(31 downto 0);
+        memory_valid      : out STD_LOGIC;
+        memory_write      : out STD_LOGIC;
+        memory_address    : out STD_LOGIC_VECTOR(31 downto 0);
         memory_write_data : out STD_LOGIC_VECTOR(31 downto 0);
         memory_write_mask : out STD_LOGIC_VECTOR(3 downto 0);
-        memory_ready    : in  STD_LOGIC;
-        memory_read_data: in  STD_LOGIC_VECTOR(31 downto 0);
-        memory_error    : in  STD_LOGIC;
-
-        -- Contadores monotônicos expostos ao simulador e à GUI.
-        access_count    : out STD_LOGIC_VECTOR(31 downto 0);
-        hit_count       : out STD_LOGIC_VECTOR(31 downto 0);
-        miss_count      : out STD_LOGIC_VECTOR(31 downto 0)
+        memory_ready      : in  STD_LOGIC;
+        memory_read_data  : in  STD_LOGIC_VECTOR(31 downto 0);
+        memory_error      : in  STD_LOGIC;
+        -- Contadores expostos ao simulador e à GUI.
+        access_count      : out STD_LOGIC_VECTOR(31 downto 0);
+        hit_count         : out STD_LOGIC_VECTOR(31 downto 0);
+        miss_count        : out STD_LOGIC_VECTOR(31 downto 0)
     );
 end l1_direct_mapped_cache;
 
@@ -41,7 +38,6 @@ architecture Behavioral of l1_direct_mapped_cache is
     type cache_line_t is array (0 to CACHE_WORDS_PER_LINE - 1) of STD_LOGIC_VECTOR(31 downto 0);
     type cache_data_t is array (0 to CACHE_SETS - 1) of cache_line_t;
     type cache_tag_t is array (0 to CACHE_SETS - 1) of STD_LOGIC_VECTOR(21 downto 0);
-
     type cache_state_t is (IDLE, LOOKUP, REFILL, WRITE_THROUGH, RESPONSE);
 
     -- Tag, valid bit e RAMs de dados formam o estado do circuito de cache.
@@ -148,6 +144,7 @@ begin
 
                         if valid_array(set_index) = '1' and tag_array(set_index) = request_tag then
                             hits <= hits + 1;
+
                             if request_write = '1' then
                                 data_array(set_index)(word_index) <= merge_bytes(
                                     data_array(set_index)(word_index), request_write_data, request_write_mask);
@@ -177,6 +174,7 @@ begin
                             else
                                 data_array(set_index)(refill_word) <= memory_read_data;
                                 tag_array(set_index) <= request_tag;
+
                                 if refill_word = CACHE_WORDS_PER_LINE - 1 then
                                     valid_array(set_index) <= '1';
                                     if request_write = '1' then

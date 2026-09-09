@@ -7,9 +7,16 @@ metadata:
 
 # CHIMPS-V conversation logging
 
-Use this skill for every task performed by an AI agent inside the CHIMPS-V
-repository. The conversation archive is part of the project documentation and
-must be maintained continuously.
+Use this skill for tasks performed by an AI agent inside the CHIMPS-V
+repository, except standalone theoretical questions. The conversation archive
+is part of the project documentation and must be maintained continuously for
+in-scope work.
+
+Standalone theoretical questions ask for explanations of concepts,
+terminology, or general knowledge and do not request repository work. Do not
+create or update a prompt log for those questions. If a turn combines such a
+question with an in-scope repository task, log only the repository-task prompt
+and output; omit the theoretical-question portion.
 
 ## Required behavior
 
@@ -27,10 +34,10 @@ must be maintained continuously.
    exact user-visible answer being returned. If the task changes files, mention
    the resulting paths using repository-relative links such as
    `[CONTEXT.md](/CONTEXT.md)`, never machine-specific absolute paths.
-5. If the task has multiple meaningful user turns, create one log per turn.
-   A user correction, clarification, or follow-up is a new prompt and must be
-   logged even when it says not to log itself; this skill's project rule takes
-   precedence for repository work.
+5. If the task has multiple meaningful, in-scope user turns, create one log per
+   turn. A user correction, clarification, or follow-up is a new prompt and
+   must be logged even when it says not to log itself; this skill's project rule
+   takes precedence for repository work.
 6. When a turn is interrupted before an output is produced, keep the prompt log
    with an `Output` note stating that the turn was interrupted. If work resumes,
    update that same log rather than creating a duplicate for the same turn.

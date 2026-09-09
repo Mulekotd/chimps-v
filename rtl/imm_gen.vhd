@@ -18,6 +18,7 @@ begin
         variable encoded : STD_LOGIC_VECTOR(31 downto 0);
     begin
         encoded := (others => '0');
+
         case immediate_type is
             when IMM_I =>
                 encoded := std_logic_vector(resize(signed(instruction(31 downto 20)), 32));
@@ -34,6 +35,7 @@ begin
             when IMM_NONE =>
                 encoded := (others => '0');
         end case;
+
         immediate <= encoded;
     end process;
 end Behavioral;

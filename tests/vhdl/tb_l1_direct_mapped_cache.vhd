@@ -15,7 +15,9 @@ architecture Behavioral of tb_l1_direct_mapped_cache is
     signal memory_address, memory_write_data, memory_read_data : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     signal memory_write_mask : STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
     signal access_count, hit_count, miss_count : STD_LOGIC_VECTOR(31 downto 0);
+
     type backing_memory_t is array (0 to 8191) of STD_LOGIC_VECTOR(31 downto 0);
+
     signal backing_memory : backing_memory_t := (others => (others => '0'));
 begin
     dut : entity work.l1_direct_mapped_cache
@@ -60,6 +62,7 @@ begin
         wait until rising_edge(clk) and cpu_ready = '1';
         cpu_valid <= '0';
         wait until rising_edge(clk) and cpu_ready = '1';
+
         assert cpu_read_data = x"11223344" report "L1 refill read failed" severity error;
         assert miss_count = x"00000001" report "L1 miss counter failed" severity error;
 
@@ -68,10 +71,11 @@ begin
         wait until rising_edge(clk) and cpu_ready = '1';
         cpu_valid <= '0';
         wait until rising_edge(clk) and cpu_ready = '1';
+
         assert cpu_read_data = x"55667788" report "L1 hit read failed" severity error;
         assert hit_count = x"00000001" report "L1 hit counter failed" severity error;
-
         assert false report "tb_l1_direct_mapped_cache completed" severity note;
+
         wait;
     end process;
 end Behavioral;

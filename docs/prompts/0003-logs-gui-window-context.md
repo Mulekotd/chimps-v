@@ -1,4 +1,4 @@
-# Log 0004 — Atualização da interface gráfica
+# Log 0003 — Atualização da interface gráfica
 
 - Data: 2026-09-08
 - Tipo: prompt/output
@@ -21,4 +21,3 @@ As mudanças incluem:
 - controles de execução, navegação por snapshots, breakpoints e inspeção de componentes;
 - execução Docker com modo `--headless` e exportação de traces;
 - roadmap, organização do repositório, métricas, riscos e critérios de aceite atualizados.
-

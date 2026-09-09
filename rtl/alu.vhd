@@ -15,13 +15,14 @@ entity alu is
 end alu;
 
 architecture Behavioral of alu is
-    -- Não é registrado: este sinal representa a lógica puramente combinacional da ALU.
+    -- Este sinal representa a lógica puramente combinacional da ALU.
     signal alu_result : STD_LOGIC_VECTOR(31 downto 0);
 begin
     -- Seleciona a operação aritmética ou lógica solicitada pelo decoder.
     process(a, b, operation)
     begin
         alu_result <= (others => '0');
+
         case operation is
             when ALU_ADD    => alu_result <= std_logic_vector(unsigned(a) + unsigned(b));
             when ALU_SUB    => alu_result <= std_logic_vector(unsigned(a) - unsigned(b));

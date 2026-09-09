@@ -4,18 +4,18 @@ use work.chimps_pkg.ALL;
 
 entity decoder is
     Port (
-        instruction  : in  STD_LOGIC_VECTOR(31 downto 0);
-        valid        : out STD_LOGIC;
-        reg_write    : out STD_LOGIC;
-        alu_src      : out STD_LOGIC;
-        alu_operation: out alu_operation_t;
-        mem_read     : out STD_LOGIC;
-        mem_write    : out STD_LOGIC;
-        mem_to_reg   : out STD_LOGIC;
-        branch       : out STD_LOGIC;
-        branch_ne    : out STD_LOGIC;
-        jump         : out STD_LOGIC;
-        jalr         : out STD_LOGIC;
+        instruction    : in  STD_LOGIC_VECTOR(31 downto 0);
+        valid          : out STD_LOGIC;
+        reg_write      : out STD_LOGIC;
+        alu_src        : out STD_LOGIC;
+        alu_operation  : out alu_operation_t;
+        mem_read       : out STD_LOGIC;
+        mem_write      : out STD_LOGIC;
+        mem_to_reg     : out STD_LOGIC;
+        branch         : out STD_LOGIC;
+        branch_ne      : out STD_LOGIC;
+        jump           : out STD_LOGIC;
+        jalr           : out STD_LOGIC;
         immediate_type : out immediate_type_t
     );
 end decoder;
@@ -49,6 +49,7 @@ begin
         case opcode is
             when OPCODE_OP =>
                 reg_write <= '1';
+
                 case funct3 is
                     when "000" => if funct7 = "0100000" then alu_operation <= ALU_SUB; else alu_operation <= ALU_ADD; end if;
                     when "111" => alu_operation <= ALU_AND;
@@ -62,6 +63,7 @@ begin
                 reg_write <= '1';
                 alu_src <= '1';
                 immediate_type <= IMM_I;
+
                 case funct3 is
                     when "000" => alu_operation <= ALU_ADD;
                     when "111" => alu_operation <= ALU_AND;

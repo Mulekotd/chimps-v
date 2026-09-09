@@ -1,4 +1,4 @@
-# Log 0006 — Auditoria da implementação VHDL
+# Log 0005 — Auditoria da implementação VHDL
 
 - Data: 2026-09-08
 - Tipo: prompt/output
@@ -16,7 +16,7 @@ Também documente como devemos seguir para os próximos passos de implementaçã
 Criei [`/docs/microarchitecture-audit.md`](/docs/microarchitecture-audit.md) com:
 
 - matriz de conformidade entre o RTL atual e o escopo do [`/CONTEXT.md`](/CONTEXT.md);
-- descrição de cada microcircuito em [`/core`](/core) e suas interfaces;
+- descrição de cada microcircuito em [`/rtl`](/rtl) e suas interfaces;
 - explicação do fluxo single-cycle atual;
 - diagrama Mermaid da microarquitetura implementada;
 - lista de lacunas: pipeline, hazards, caches, MMIO/FIFOs, `M`, `F`, CSRs, GUI, assembler e Docker/CI;

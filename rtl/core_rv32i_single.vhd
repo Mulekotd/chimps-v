@@ -5,19 +5,19 @@ use work.chimps_pkg.ALL;
 
 entity core_rv32i_single is
     Port (
-        clk                : in  STD_LOGIC;
-        rst                : in  STD_LOGIC;
-        current_pc         : out STD_LOGIC_VECTOR(31 downto 0);
-        current_instruction: out STD_LOGIC_VECTOR(31 downto 0);
-        current_alu_result : out STD_LOGIC_VECTOR(31 downto 0);
-        memory_address     : out STD_LOGIC_VECTOR(31 downto 0);
-        memory_write_data  : out STD_LOGIC_VECTOR(31 downto 0);
-        memory_write_enable: out STD_LOGIC;
-        load_enable        : in  STD_LOGIC;
-        load_address       : in  STD_LOGIC_VECTOR(31 downto 0);
-        load_data          : in  STD_LOGIC_VECTOR(31 downto 0);
-        retired            : out STD_LOGIC;
-        illegal_instruction: out STD_LOGIC
+        clk                 : in  STD_LOGIC;
+        rst                 : in  STD_LOGIC;
+        current_pc          : out STD_LOGIC_VECTOR(31 downto 0);
+        current_instruction : out STD_LOGIC_VECTOR(31 downto 0);
+        current_alu_result  : out STD_LOGIC_VECTOR(31 downto 0);
+        memory_address      : out STD_LOGIC_VECTOR(31 downto 0);
+        memory_write_data   : out STD_LOGIC_VECTOR(31 downto 0);
+        memory_write_enable : out STD_LOGIC;
+        load_enable         : in  STD_LOGIC;
+        load_address        : in  STD_LOGIC_VECTOR(31 downto 0);
+        load_data           : in  STD_LOGIC_VECTOR(31 downto 0);
+        retired             : out STD_LOGIC;
+        illegal_instruction : out STD_LOGIC
     );
 end core_rv32i_single;
 

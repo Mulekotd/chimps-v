@@ -4,15 +4,15 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity register_file is
     Port (
-        clk          : in  STD_LOGIC;
-        rst          : in  STD_LOGIC;
-        write_enable : in  STD_LOGIC;
-        write_address: in  STD_LOGIC_VECTOR(4 downto 0);
-        write_data   : in  STD_LOGIC_VECTOR(31 downto 0);
-        read_address1: in  STD_LOGIC_VECTOR(4 downto 0);
-        read_address2: in  STD_LOGIC_VECTOR(4 downto 0);
-        read_data1   : out STD_LOGIC_VECTOR(31 downto 0);
-        read_data2   : out STD_LOGIC_VECTOR(31 downto 0)
+        clk           : in  STD_LOGIC;
+        rst           : in  STD_LOGIC;
+        write_enable  : in  STD_LOGIC;
+        write_address : in  STD_LOGIC_VECTOR(4 downto 0);
+        write_data    : in  STD_LOGIC_VECTOR(31 downto 0);
+        read_address1 : in  STD_LOGIC_VECTOR(4 downto 0);
+        read_address2 : in  STD_LOGIC_VECTOR(4 downto 0);
+        read_data1    : out STD_LOGIC_VECTOR(31 downto 0);
+        read_data2    : out STD_LOGIC_VECTOR(31 downto 0)
     );
 end register_file;
 
