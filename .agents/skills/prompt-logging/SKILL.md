@@ -1,5 +1,5 @@
 ---
-name: chimps-v-prompt-logging
+name: prompt-logging
 description: Preserve user-visible prompts and assistant outputs for every CHIMPS-V project conversation in numbered Markdown logs under docs/prompts.
 metadata:
   short-description: Log CHIMPS-V AI conversations
@@ -14,8 +14,9 @@ must be maintained continuously.
 ## Required behavior
 
 1. Before doing substantive work, inspect `docs/prompts/` and determine the next
-   unused numeric prefix. Preserve existing logs; never overwrite or renumber
-   them.
+   prefix by adding one to the highest existing numeric prefix. Do not reuse a
+   gap left by deleted historical logs, and never overwrite or renumber existing
+   logs.
 2. Create one Markdown log for the current user turn, using a name such as
    `0002-logs-short-description.md`. Use four digits, lowercase kebab-case, and
    the sections `# Log ...`, `## Prompt`, and `## Output`.

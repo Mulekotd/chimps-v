@@ -5,14 +5,15 @@
 
 ## 1. Visão do projeto
 
-**CHIMPS-V** é uma ferramenta, para montar, executar e observar ciclo a ciclo
-uma microarquitetura RISC-V própria. A aplicação deve tornar visíveis o caminho de dados,
-unidade de controle, registradores, pipeline, caches, memória e I/O, conectando cada instrução
-a seus efeitos de hardware e métricas de desempenho.
+**CHIMPS-V** é uma ferramenta educacional para montar, executar e observar ciclo a ciclo
+uma microarquitetura RISC-V própria. A aplicação deve combinar um simulador determinístico
+com uma interface gráfica em janela capaz de desenhar o caminho de dados: CPU, registradores,
+barramentos, unidades funcionais, caches, memória principal e I/O. Uma TUI/CLI headless
+permanece disponível para automação, CI e depuração.
 
 O resultado não é apenas um emulador de ISA: é um simulador de uma
 **microarquitetura explícita**, com estado temporal e sinais observáveis. A
-implementação do núcleo será feita do zero em RTL/SystemVerilog; bibliotecas podem
+implementação do núcleo será feita do zero em RTL/VHDL; bibliotecas podem
 ser usadas como oráculos de teste, mas não substituem os circuitos do processador.
 
 ### Objetivos de aprendizagem
@@ -24,12 +25,14 @@ ser usadas como oráculos de teste, mas não substituem os circuitos do processa
   arredondamentos e exceções acumuladas.
 - Permitir experimentação reproduzível: alterar uma configuração, executar o mesmo
   programa e comparar métricas/traces.
+- Visualizar a sequência fetch → decode → execute → memory → write-back e o caminho
+  efetivamente percorrido por cada acesso em um esquemático de CPU.
 
 ### Não objetivos da primeira entrega
 
 - Sistema operacional, MMU/paginação, modos Supervisor/Hypervisor, multicore,
   coerência de cache, execução fora de ordem, predição dinâmica e extensões C/A/V.
-- Síntese em FPGA/ASIC. O RTL deve ser sintetizável na maior parte possível, mas a
+- Síntese em FPGA/ASIC. O RTL VHDL deve ser sintetizável na maior parte possível, mas a
   entrega obrigatória é a simulação no container.
 
 ## 2. Decisões arquiteturais iniciais
@@ -44,18 +47,21 @@ ser usadas como oráculos de teste, mas não substituem os circuitos do processa
 | Memória       | RAM unificada de dados e instruções, mapeada em memória                                 | Implementa Von Neumann.                                                                                                                          |
 | Caches L1     | I-cache e D-cache separadas, configuráveis, com backing na mesma RAM                    | Não transforma a máquina em Harvard: a memória primária continua única; separar L1 elimina a contenção IF×MEM e torna a demonstração mais clara. |
 | I/O           | MMIO com buffers FIFO de entrada e saída                                                | Modela periféricos sem criar instruções fora da ISA.                                                                                             |
-| Interface     | TUI interativa de terminal                                                              | Atende à GUI pedida sem exigir servidor gráfico e funciona bem em Docker.                                                                        |
+| Interface     | GUI desktop em janela + CLI/TUI headless                                                | A GUI é a experiência principal de demonstração; CLI/TUI facilita CI, depuração e execução em Docker sem display.                                |
+| GUI           | Frontend em linguagem de alto nível, desacoplado do simulador por snapshots de ciclo    | Permite escolher Qt/C++ ou PySide/Python sem duplicar regras de microarquitetura.                                                                |
 | Empacotamento | Docker/Compose, execução sem dependência de instalação local                            | Reproduzibilidade da demonstração e avaliação.                                                                                                   |
 
 ### Escopo funcional por marco
 
 1. **MVP — `RV32I`**: montador, RAM, registradores, ALU, control-flow, pipeline,
-   hazards e TUI com execução passo a passo.
-2. **Memória e I/O**: I-cache/D-cache, métricas, MMIO e buffers FIFO.
-3. **Desempenho inteiro — `M`**: multiplicador/divisor RTL multi-ciclo, stalls e
+   snapshots de ciclo e CLI/TUI headless com execução passo a passo.
+2. **GUI de observabilidade**: janela, esquemático CPU↔memória, timeline dos estágios,
+   animação/realce de barramentos e inspeção de sinais.
+3. **Memória e I/O**: I-cache/D-cache, métricas, MMIO e buffers FIFO.
+4. **Desempenho inteiro — `M`**: multiplicador/divisor RTL multi-ciclo, stalls e
    métricas de ocupação.
-4. **Ponto flutuante — `F`**: registros FP, load/store FP, FPU e `fcsr`.
-5. **Integração e demonstração**: Docker, testes de regressão, roteiros e exemplos.
+5. **Ponto flutuante — `F`**: registros FP, load/store FP, FPU e `fcsr`.
+6. **Integração e demonstração**: Docker, testes de regressão, roteiros e exemplos.
 
 Não avançar um marco enquanto suas especificações e sua suíte de testes não
 estiverem verdes. O conjunto `RV32IMF_Zicsr` é a meta final; cada release deve
@@ -185,9 +191,95 @@ modo inicial, leituras de RX vazio não bloqueiam: retornam 0 e o programa consu
 `UART_RX_STATUS`. Um modo opcional “blocking read” pode ser adicionado depois com
 stall explícito e testado.
 
-## 4. Experiência de terminal (TUI)
+## 4. Interface de observabilidade
 
-A “GUI de terminal” deve ser uma TUI navegável, não somente logs. Interface mínima:
+A GUI desktop em janela é a interface principal para a apresentação. Ela não deve
+reimplementar o processador: o simulador continua sendo a única fonte de verdade e
+publica snapshots imutáveis do estado a cada ciclo. O frontend pode ser escrito em
+C++/Qt ou Python/PySide, desde que consuma o mesmo contrato. A escolha da tecnologia
+deve ser registrada em um ADR e não pode alterar a semântica nem o timing do núcleo.
+
+### 4.1 Contrato entre simulador e GUI
+
+Definir um tipo versionado `CycleSnapshot` (JSON para integração inicial; binding
+direto ou protobuf pode ser avaliado depois) contendo, no mínimo:
+
+- número do ciclo, estado da máquina (`reset`, `running`, `paused`, `halted`, `trap`)
+  e instrução aposentada;
+- PC, instrução e fonte Assembly associada em cada estágio IF/ID/EX/MEM/WB;
+- valores dos registradores, FPRs, CSRs relevantes, `fcsr` e flags de alteração;
+- entradas/saídas de ALU, FPU, multiplicador/divisor, unidade de controle e
+  registradores de pipeline;
+- transações de barramento: origem, destino, endereço, dados, máscara, leitura/
+  escrita, `valid`, `ready`, stall e latência;
+- acessos de I-cache/D-cache e RAM: hit/miss, tag/index/offset, linha, dirty,
+  refill/write-back e estado da FSM;
+- MMIO/FIFO, traps, hazards, forwarding, flushes e razões de stalls;
+- métricas acumuladas e configuração da execução.
+
+O snapshot deve ser suficiente para reconstruir a tela de um ciclo sem consultar
+estado oculto do simulador. O protocolo deve definir versionamento, campos opcionais,
+endianness, unidades, ciclo inicial e se os valores representam estado antes ou
+depois da borda de clock. Exportar os mesmos snapshots em JSON/CSV para depuração e
+reprodução de bugs.
+
+### 4.2 Esquemático visual
+
+O layout padrão deve apresentar uma visão geral e permitir detalhamento:
+
+```text
++----------------------+       barramentos/endereços       +----------------------+
+| Memória Principal    | <----> Controlador de Memória <--> | CPU                  |
+| RAM + regiões MMIO   |       I-cache / D-cache            | PC | RF | FPR        |
+| linhas, bytes, tags  |                                   | ALU | FPU | Controle |
++----------------------+                                   | IF ID EX MEM WB       |
+                                                           +----------------------+
+```
+
+Componentes mínimos desenhados como blocos selecionáveis:
+
+- PC, banco de registradores, FPRs, unidade de controle, gerador de imediatos,
+  ALU, comparador de branch, FPU, MUL/DIV e registradores entre estágios;
+- barramento de instruções e barramento de dados, com setas direcionais e sinais
+  `valid/ready`, endereço e valor transferido;
+- I-cache, D-cache, controlador de cache, RAM unificada e regiões MMIO/FIFO;
+- indicador de forwarding, bolha, stall, flush, miss, write-back e trap.
+
+Quando o usuário selecionar um ciclo ou uma instrução, a GUI deve realçar o caminho
+percorrido em ordem sequencial — fetch, decode, execute, memory e write-back — e
+mostrar os valores nas arestas do diagrama. Uma cor/legenda acessível deve
+distinguir leitura, escrita, instrução inválida, stall, flush, hit, miss e erro;
+cor nunca pode ser a única forma de comunicar um estado.
+
+### 4.3 Interação e controles
+
+Requisitos da janela:
+
+- carregar arquivo `.s`, montar, resetar, executar, pausar e avançar um ciclo ou uma
+  instrução aposentada;
+- slider/timeline para navegar pelos snapshots já produzidos e voltar a qualquer
+  ciclo sem executar novamente;
+- seleção de componente para abrir seus sinais, estado interno e histórico curto;
+- inspeção de RAM por endereço, linha de cache, registradores, FPRs, CSRs e FIFO;
+- breakpoints por PC, endereço de memória, instrução, trap, miss e alteração de
+  registrador;
+- painel de métricas com CPI, stalls, flushes, hits/misses e latências;
+- exportação/importação de trace para que uma demonstração possa ser reproduzida
+  sem depender do ritmo da animação;
+- zoom, pan, ajuste automático do esquemático e modo de alto contraste.
+
+O desenho deve ser didático antes de ser decorativo: cada bloco tem nome, descrição
+curta e ligação aos sinais reais. A GUI deve continuar responsiva durante uma
+execução longa; executar o simulador em worker/thread separado e encaminhar
+snapshots por fila limitada, aplicando backpressure ou amostragem configurável.
+
+### 4.4 TUI/CLI headless
+
+A TUI deixa de ser a GUI principal, mas permanece obrigatória como interface de
+automação e fallback em Docker sem display. Ela deve expor os mesmos comandos
+essenciais e consumir o mesmo `CycleSnapshot`, sem uma segunda regra de negócio.
+
+Interface mínima:
 
 ```text
 CHIMPS-V  ciclo 184  | RUNNING | CPI 1.37 | I$: 92.1% | D$: 75.0%
@@ -247,20 +339,20 @@ teste de unidade/RTL pertinente, evidência de execução e entrada no changelog
 
 ### 6.2 Pirâmide TDD e verificação
 
-| Nível                | O que comprovar                                 | Exemplos                                                                |
-| -------------------- | ----------------------------------------------- | ----------------------------------------------------------------------- |
-| Unidade              | funções puras do montador e blocos RTL isolados | imediato B/J, ALU, registrador x0, FIFO, tag/index/offset, round/sticky |
-| Módulo RTL           | protocolo por ciclo e invariantes               | cache refill/write-back, hazard unit, FPU `busy/done`, RAM/MMIO         |
-| Integração           | caminho completo programa → estado              | `lw` seguido de `add`, branch tomado, saída UART, miss de cache         |
-| Arquitetural         | semântica da ISA declarada                      | `riscv-arch-test`/`riscv-tests`, assinaturas e programas dirigidos      |
-| Aceitação TUI/Docker | fluxo do usuário e reprodutibilidade            | container monta, executa exemplo e exporta trace sem intervenção        |
+| Nível                | O que comprovar                                 | Exemplos                                                                 |
+| -------------------- | ----------------------------------------------- | ------------------------------------------------------------------------ |
+| Unidade              | funções puras do montador e blocos RTL isolados | imediato B/J, ALU, registrador x0, FIFO, tag/index/offset, round/sticky  |
+| Módulo RTL           | protocolo por ciclo e invariantes               | cache refill/write-back, hazard unit, FPU `busy/done`, RAM/MMIO          |
+| Integração           | caminho completo programa → estado              | `lw` seguido de `add`, branch tomado, saída UART, miss de cache          |
+| Arquitetural         | semântica da ISA declarada                      | `riscv-arch-test`/`riscv-tests`, assinaturas e programas dirigidos       |
+| Aceitação GUI/Docker | fluxo do usuário e reprodutibilidade            | janela mostra o ciclo; container headless monta, executa e exporta trace |
 
 Prática obrigatória por mudança: escrever o teste que falha, implementar o mínimo,
 refatorar com todos os testes verdes. Todo bug ganha teste de regressão. O CI deve
 falhar em lint, formatação, testes unitários, simulação RTL, testes de integração e
 smoke test do container.
 
-Invariantes transversais a verificar com assertions SystemVerilog:
+Invariantes transversais a verificar com assertions VHDL e PSL:
 
 - `x0 == 0` em todos os ciclos; escrita em `x0` é descartada.
 - Uma instrução inválida/flushada não altera GPR, FPR, RAM, CSR ou MMIO.
@@ -286,11 +378,15 @@ trace por trace e não somente o estado final.
 │   ├── diagrams/              # fonte de diagramas e exports
 │   └── demo/                  # roteiro e evidências
 ├── specs/                     # especificações versionadas (SDD)
-├── rtl/                       # SystemVerilog sintetizável
-│   ├── core/ cache/ memory/ io/ fpu/
+├── rtl/                       # VHDL sintetizável
+│   ├── core_rv32i_single.vhd  # referência single-cycle
+│   ├── l1_direct_mapped_cache.vhd
+│   └── pipeline/ memory/ io/ fpu/
 ├── sim/                       # harness, adaptadores e artefatos de trace
+│   ├── snapshots/             # contrato CycleSnapshot e serialização
 ├── assembler/                 # lexer/parser/encoder/listagem
-├── tui/                       # interface de terminal
+├── gui/                       # aplicação desktop, canvas/esquemático e timeline
+├── tui/                       # interface CLI/TUI headless
 ├── programs/                  # exemplos Assembly e entradas de I/O
 ├── tests/
 │   ├── unit/ rtl/ integration/ acceptance/ architectural/
@@ -300,23 +396,29 @@ trace por trace e não somente o estado final.
 └── .github/workflows/ci.yml
 ```
 
-Escolha de ferramentas a validar no primeiro spike: SystemVerilog + Verilator para
-simulação/lint, cocotb ou testbench SystemVerilog para testes, e Rust ou Python
-para montador/harness/TUI. O RTL não pode depender da linguagem do harness. Fixar
-versões de imagem, simulador, bibliotecas e toolchain no Dockerfile/lockfiles.
+Escolha de ferramentas a validar no primeiro spike: VHDL-2008 + GHDL para
+simulação/lint, VUnit ou OSVVM para testes, e Rust ou Python
+para montador/harness. Para a GUI, avaliar Qt/C++ e PySide/Python usando um pequeno
+protótipo que desenhe CPU, RAM, barramentos e um snapshot. O RTL não pode depender
+da linguagem do harness ou da GUI. Fixar versões de imagem, simulador, bibliotecas,
+toolchain e framework gráfico no Dockerfile/lockfiles.
 
 ## 8. Docker e operação reprodutível
 
 O container precisa possuir todas as ferramentas para montar, simular, testar e
-abrir a TUI. Usar imagem multi-stage: etapa de build instala dependências e compila;
-imagem final contém apenas runtime, binários e recursos necessários. Executar como
-usuário não-root, expor diretório `/workspace` para programas/traces e documentar
-comandos únicos, por exemplo:
+executar a TUI. A GUI desktop deve possuir um modo local documentado: quando houver
+servidor gráfico disponível, usar encaminhamento/integração apropriada; quando não
+houver display, executar em `--headless`, exportar snapshots e permitir abrir o
+trace fora do container. Usar imagem multi-stage: etapa de build instala
+dependências e compila; imagem final contém apenas runtime, binários e recursos
+necessários. Executar como usuário não-root, expor diretório `/workspace` para
+programas/traces e documentar comandos únicos, por exemplo:
 
 ```bash
 docker compose run --rm chimpsv test
 docker compose run --rm chimpsv run programs/demo_pipeline.s --step
 docker compose run --rm chimpsv run programs/demo_cache.s --trace /workspace/out/cache.json
+docker compose run --rm chimpsv run programs/demo_pipeline.s --headless --trace /workspace/out/pipeline.json
 ```
 
 Critérios: build limpo em máquina sem toolchain RISC-V; comandos não dependem de
@@ -325,14 +427,15 @@ build; artefatos de demonstração e traces podem ser exportados.
 
 ## 9. Roadmap com entregáveis e gates
 
-| Fase             | Entregável                                       | Gate de aceite                                         |
-| ---------------- | ------------------------------------------------ | ------------------------------------------------------ |
-| 0 — Fundação     | ADRs, `specs/`, estrutura, Docker e CI           | `docker compose … test` verde em checkout limpo        |
-| 1 — ISA/montador | RV32I definido, montador, loader e listagem      | encoding/diagnósticos testados; exemplos montam        |
-| 2 — Núcleo base  | PC, GPR, ALU, RAM, pipeline e TUI de passo       | programas RV32I e hazards têm trace esperado           |
-| 3 — Caches/I-O   | L1s, MMIO/FIFOs e painel de métricas             | testes de hit/miss/write-back/FIFO e demo reproduzível |
-| 4 — M e F        | unidades multi-ciclo, FPR/fcsr e IEEE 754        | vetores bit-a-bit, flags e stalls corretos             |
-| 5 — Qualidade    | regressão arquitetural, cobertura e documentação | CI verde; roteiro de apresentação executado no Docker  |
+| Fase             | Entregável                                        | Gate de aceite                                                           |
+| ---------------- | ------------------------------------------------- | ------------------------------------------------------------------------ |
+| 0 — Fundação     | ADRs, `specs/`, estrutura, Docker e CI            | `docker compose … test` verde em checkout limpo                          |
+| 1 — ISA/montador | RV32I definido, montador, loader e listagem       | encoding/diagnósticos testados; exemplos montam                          |
+| 2 — Núcleo base  | PC, GPR, ALU, RAM, pipeline e snapshots           | programas RV32I, hazards e snapshots têm trace esperado                  |
+| 3 — GUI          | janela, esquemático CPU/RAM, timeline e controles | um ciclo pode ser reproduzido visualmente e os sinais conferem com o RTL |
+| 4 — Caches/I-O   | L1s, MMIO/FIFOs e painel de métricas              | testes de hit/miss/write-back/FIFO e demo reproduzível                   |
+| 5 — M e F        | unidades multi-ciclo, FPR/fcsr e IEEE 754         | vetores bit-a-bit, flags e stalls corretos                               |
+| 6 — Qualidade    | regressão arquitetural, cobertura e documentação  | CI verde; roteiro de apresentação executado no Docker                    |
 
 Prioridade de demonstrações: (1) `lw`→uso imediato para bolha e forwarding; (2)
 branch tomado para flush; (3) acesso repetido e conflitante para cache; (4) eco de
@@ -340,14 +443,16 @@ caracteres UART com FIFO; (5) `1.0/0.0`, NaN e arredondamento para FPU/`fflags`.
 
 ## 10. Métricas e critérios de sucesso
 
-Exibir e exportar: ciclos, instruções aposentadas, CPI, IPC, stalls por causa,
+Exibir e exportar na GUI, TUI e trace: ciclos, instruções aposentadas, CPI, IPC, stalls por causa,
 flushes, branches/taxa de tomados, acessos/hits/misses/write-backs por cache, AMAT,
 operações FPU/MUL/DIV e ciclos ocupados, bytes RX/TX e uso máximo dos FIFOs.
 
 O projeto estará pronto para demonstração quando:
 
 - qualquer pessoa puder construir e executar a demonstração apenas com Docker;
-- a TUI mostrar corretamente estado e fluxo por ciclo para os cinco cenários;
+- a GUI mostrar corretamente o esquemático, o fluxo sequencial e os sinais por ciclo
+  para os cinco cenários;
+- a TUI/CLI executar a mesma sessão em modo headless e produzir snapshots equivalentes;
 - a ISA implementada estiver declarada e coberta por testes arquiteturais e
   diferenciais compatíveis;
 - o caminho de cada requisito deste documento para sua spec, testes e evidência
@@ -356,14 +461,16 @@ O projeto estará pronto para demonstração quando:
 
 ## 11. Riscos, limites e mitigação
 
-| Risco                                 | Impacto | Mitigação                                                                                             |
-| ------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
-| Escopo de `F` e divisão/raiz          | Alto    | Entregar RV32I+pipeline+caches primeiro; projetar FPU multi-ciclo por etapas e declarar suporte real. |
-| Diferença entre estado final e timing | Alto    | trace por ciclo, assertions e testes de aceitação com contagens exatas.                               |
-| Cache complexo demais                 | Médio   | começar com I$ direta e D$ direta; evoluir D$ para 2 vias após write-back testado.                    |
-| TUI consumir o cronograma             | Médio   | separar modelo de apresentação; primeiro CLI/headless + export, depois TUI.                           |
-| Docker não reproduz build             | Alto    | CI constrói imagem do zero e executa smoke test em toda mudança.                                      |
-| Implementação “simulada em software”  | Alto    | RTL é fonte do estado microarquitetural; harness/TUI apenas dirige/observa RTL.                       |
+| Risco                                 | Impacto | Mitigação                                                                                                |
+| ------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------- |
+| Escopo de `F` e divisão/raiz          | Alto    | Entregar RV32I+pipeline+caches primeiro; projetar FPU multi-ciclo por etapas e declarar suporte real.    |
+| Diferença entre estado final e timing | Alto    | trace por ciclo, assertions e testes de aceitação com contagens exatas.                                  |
+| Cache complexo demais                 | Médio   | começar com I$ direta e D$ direta; evoluir D$ para 2 vias após write-back testado.                       |
+| GUI consumir o cronograma             | Alto    | separar modelo de apresentação; primeiro CLI/headless + snapshots, depois protótipo visual e integração. |
+| GUI e simulador divergirem            | Alto    | `CycleSnapshot` versionado, testes de contrato e um único caminho de dados vindo do RTL.                 |
+| Docker sem display                    | Médio   | manter modo headless, exportar traces e documentar execução local da janela.                             |
+| Docker não reproduz build             | Alto    | CI constrói imagem do zero e executa smoke test em toda mudança.                                         |
+| Implementação “simulada em software”  | Alto    | RTL é fonte do estado microarquitetural; harness/TUI apenas dirige/observa RTL.                          |
 
 ## 12. Referências
 
@@ -418,10 +525,3 @@ O projeto estará pronto para demonstração quando:
     das especificações do projeto).
 19. Docker. _Dockerfile reference_ e _Compose specification_.
     https://docs.docker.com/reference/dockerfile/ e https://docs.docker.com/compose/
-
-## 13. Próxima ação recomendada
-
-Criar os ADRs 001–005 (ISA, Von Neumann+cache, pipeline/hazards, FPU, toolchain),
-as specs `RV32I`, `pipeline` e `memory-map`, e um primeiro vertical slice:
-`addi`/`add`/`lw`/`sw`/`beq` da fonte Assembly até a TUI em passo a passo. Esse
-slice deve nascer no Docker e com testes antes de qualquer expansão de ISA.

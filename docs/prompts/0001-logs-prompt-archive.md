@@ -5,7 +5,7 @@
 
 ## Prompt
 
-Armazene em /docs/prompts todos os prompts, que foram utilizados por mim, e seus outputs a partir de então. Aproveite e adicione o log 0000-logs-init.md sendo o primeiro prompt que te mandei anteriormente nessa conversa e salve o seu output também.
+Armazene em /docs/prompts todos os prompts, que forem feitos por mim, e seus outputs a partir de então. Aproveite e adicione o log 0000-logs-init.md sendo o primeiro prompt que te mandei anteriormente nesta conversa e salve o seu output também.
 
 ## Output
 
