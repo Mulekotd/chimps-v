@@ -472,56 +472,20 @@ O projeto estará pronto para demonstração quando:
 | Docker não reproduz build             | Alto    | CI constrói imagem do zero e executa smoke test em toda mudança.                                         |
 | Implementação “simulada em software”  | Alto    | RTL é fonte do estado microarquitetural; harness/TUI apenas dirige/observa RTL.                          |
 
-## 12. Referências
+## 12. Artigos e práticas de engenharia
 
-### Especificações e testes primários
-
-1. RISC-V International. _The RISC-V Instruction Set Manual, Volume I:
-   Unprivileged Architecture_, Ratified Specifications Library, versão
-   2026-01-20. https://docs.riscv.org/reference/isa/
-2. RISC-V International. _RV32I Base Integer Instruction Set, Version 2.1_.
-   https://docs.riscv.org/reference/isa/v20260120/unpriv/rv32.html
-3. RISC-V International. _“M” Extension for Integer Multiplication and Division_.
-   https://docs.riscv.org/reference/isa/unpriv/m-st-ext.html
-4. RISC-V International. _“F” Extension for Single-Precision Floating-Point,
-   Version 2.2_. https://docs.riscv.org/reference/isa/unpriv/f-st-ext.html
-5. RISC-V International. _The RISC-V Instruction Set Manual, Volume II:
-   Privileged Architecture_ (consultar somente Machine mode/CSRs que forem
-   declarados no escopo). https://docs.riscv.org/reference/isa/priv/priv-index.html
-6. IEEE. _IEEE Std 754-2019 — IEEE Standard for Floating-Point Arithmetic_, 2019;
-   ISO/IEC/IEEE 60559:2020. https://standards.ieee.org/ieee/754/6210/
-7. RISC-V International. _RISC-V Architectural Certification Tests
-   (`riscv-arch-test`)_. https://github.com/riscv/riscv-arch-test
-8. RISC-V Software Source. _riscv-tests_. https://github.com/riscv-software-src/riscv-tests
-9. Hauser, John R. _Berkeley SoftFloat Release 3e: Library Interface_, 2018.
-   https://www.jhauser.us/arithmetic/SoftFloat.html (oráculo para testes FP, não
-   implementação do núcleo).
-
-### Livros fundamentais
-
-10. Patterson, David A.; Hennessy, John L. _Computer Organization and Design
-    RISC-V Edition: The Hardware Software Interface_, 2nd ed., Morgan Kaufmann, 2020. ISBN 978-0128203316.
-11. Hennessy, John L.; Patterson, David A. _Computer Architecture: A Quantitative
-    Approach_, 6th ed., Morgan Kaufmann, 2019. ISBN 978-0128119051.
-12. Harris, Sarah L.; Harris, David M. _Digital Design and Computer Architecture:
-    RISC-V Edition_, Morgan Kaufmann, 2021. ISBN 978-0128200643.
-13. Mano, M. Morris; Ciletti, Michael D. _Digital Design_, 6th ed., Pearson, 2017.
-    ISBN 978-0134549897.
-
-### Artigos e práticas de engenharia
-
-14. Smith, Alan J. “Cache Memories.” _ACM Computing Surveys_, 14(3), 473–530, 1982. https://doi.org/10.1145/356887.356892
-15. Tomasulo, Robert M. “An Efficient Algorithm for Exploiting Multiple Arithmetic
-    Units.” _IBM Journal of Research and Development_, 11(1), 25–33, 1967.
-    https://doi.org/10.1147/rd.111.0025 (referência conceitual; OoO não integra o
-    escopo inicial).
-16. Tullsen, Dean M.; Brown, Michael Q.; Voelker, Geoffrey M. “Use of architectural
-    simulation tools in education.” _WCAE ’95_, 1995.
-    https://doi.org/10.1145/1275225.1275232
-17. Beck, Kent. _Test Driven Development: By Example_. Addison-Wesley, 2002.
-    ISBN 978-0321146533.
-18. RFC Editor. _RFC 2119: Key words for use in RFCs to Indicate Requirement
-    Levels_, 1997. https://www.rfc-editor.org/rfc/rfc2119 (vocabulário MUST/SHALL
-    das especificações do projeto).
-19. Docker. _Dockerfile reference_ e _Compose specification_.
-    https://docs.docker.com/reference/dockerfile/ e https://docs.docker.com/compose/
+1. Smith, Alan J. “Cache Memories.” _ACM Computing Surveys_, 14(3), 473–530, 1982. https://doi.org/10.1145/356887.356892
+2. Tomasulo, Robert M. “An Efficient Algorithm for Exploiting Multiple Arithmetic
+   Units.” _IBM Journal of Research and Development_, 11(1), 25–33, 1967.
+   https://doi.org/10.1147/rd.111.0025 (referência conceitual; OoO não integra o
+   escopo inicial).
+3. Tullsen, Dean M.; Brown, Michael Q.; Voelker, Geoffrey M. “Use of architectural
+   simulation tools in education.” _WCAE ’95_, 1995.
+   https://doi.org/10.1145/1275225.1275232
+4. Beck, Kent. _Test Driven Development: By Example_. Addison-Wesley, 2002.
+   ISBN 978-0321146533.
+5. RFC Editor. _RFC 2119: Key words for use in RFCs to Indicate Requirement
+   Levels_, 1997. https://www.rfc-editor.org/rfc/rfc2119 (vocabulário MUST/SHALL
+   das especificações do projeto).
+6. Docker. _Dockerfile reference_ e _Compose specification_.
+   https://docs.docker.com/reference/dockerfile/ e https://docs.docker.com/compose/
