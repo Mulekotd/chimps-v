@@ -12,6 +12,7 @@ architecture Behavioral of tb_l1_direct_mapped_cache is
     signal cpu_address, cpu_write_data, cpu_read_data : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     signal cpu_write_mask : STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
     signal memory_valid, memory_write, memory_ready, memory_error : STD_LOGIC := '0';
+    signal inject_memory_error : STD_LOGIC := '0';
     signal memory_address, memory_write_data, memory_read_data : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     signal memory_write_mask : STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
     signal access_count, hit_count, miss_count : STD_LOGIC_VECTOR(31 downto 0);
@@ -45,7 +46,7 @@ begin
 
     clk <= not clk after 5 ns;
     memory_ready <= memory_valid;
-    memory_error <= '0';
+    memory_error <= inject_memory_error;
     memory_read_data <= backing_read(memory_address);
 
     -- Memória de suporte simples, sem espera, usada para verificar refill e write-through.
@@ -96,6 +97,16 @@ begin
         cpu_valid <= '0';
         wait until rising_edge(clk) and cpu_ready = '1';
         assert miss_count = x"00000002" report "L1 conflict miss counter failed" severity error;
+
+        -- Erro de backing durante refill deve chegar à CPU e não validar a linha.
+        inject_memory_error <= '1';
+        cpu_address <= x"00000800"; cpu_valid <= '1';
+        wait until rising_edge(clk) and cpu_ready = '1';
+        cpu_valid <= '0';
+        wait until cpu_error = '1';
+        assert cpu_read_data = x"00000000" report "L1 error response data failed" severity error;
+        inject_memory_error <= '0';
+        wait until rising_edge(clk) and cpu_ready = '1';
         assert false report "tb_l1_direct_mapped_cache completed" severity note;
 
         wait;

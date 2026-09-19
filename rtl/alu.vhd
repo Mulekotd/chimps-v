@@ -34,6 +34,9 @@ begin
             when ALU_SLTU   =>
                 if unsigned(a) < unsigned(b) then alu_result(0) <= '1'; end if;
             when ALU_COPY_B => alu_result <= b;
+            when ALU_SLL => alu_result <= std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(b(4 downto 0)))));
+            when ALU_SRL => alu_result <= std_logic_vector(shift_right(unsigned(a), to_integer(unsigned(b(4 downto 0)))));
+            when ALU_SRA => alu_result <= std_logic_vector(shift_right(signed(a), to_integer(unsigned(b(4 downto 0)))));
             when ALU_NONE   => alu_result <= (others => '0');
         end case;
     end process;

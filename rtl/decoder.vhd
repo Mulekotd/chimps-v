@@ -16,7 +16,9 @@ entity decoder is
         branch_ne      : out STD_LOGIC;
         jump           : out STD_LOGIC;
         jalr           : out STD_LOGIC;
-        immediate_type : out immediate_type_t
+        immediate_type : out immediate_type_t;
+        m_enable       : out STD_LOGIC := '0';
+        m_operation    : out mul_div_operation_t := MUL_OP
     );
 end decoder;
 
@@ -45,11 +47,24 @@ begin
         jump <= '0';
         jalr <= '0';
         immediate_type <= IMM_NONE;
+        m_enable <= '0'; m_operation <= MUL_OP;
 
         case opcode is
             when OPCODE_OP =>
                 reg_write <= '1';
-
+                if funct7 = "0000001" then
+                    m_enable <= '1';
+                    case funct3 is
+                        when "000" => m_operation <= MUL_OP;
+                        when "001" => m_operation <= MULH_OP;
+                        when "010" => m_operation <= MULHSU_OP;
+                        when "011" => m_operation <= MULHU_OP;
+                        when "100" => m_operation <= DIV_OP;
+                        when "101" => m_operation <= DIVU_OP;
+                        when "110" => m_operation <= REM_OP;
+                        when others => m_operation <= REMU_OP;
+                    end case;
+                else
                 case funct3 is
                     when "000" => if funct7 = "0100000" then alu_operation <= ALU_SUB; else alu_operation <= ALU_ADD; end if;
                     when "111" => alu_operation <= ALU_AND;
@@ -57,8 +72,15 @@ begin
                     when "100" => alu_operation <= ALU_XOR;
                     when "010" => alu_operation <= ALU_SLT;
                     when "011" => alu_operation <= ALU_SLTU;
+                    when "001" => alu_operation <= ALU_SLL;
+                    when "101" =>
+                        if funct7 = "0100000" then alu_operation <= ALU_SRA;
+                        else alu_operation <= ALU_SRL; end if;
                     when others => valid <= '0';
                 end case;
+                if funct7 /= "0000000" and not (funct7 = "0100000" and
+                    (funct3 = "000" or funct3 = "101")) then valid <= '0'; end if;
+                end if;
             when OPCODE_OP_IMM =>
                 reg_write <= '1';
                 alu_src <= '1';
@@ -71,24 +93,31 @@ begin
                     when "100" => alu_operation <= ALU_XOR;
                     when "010" => alu_operation <= ALU_SLT;
                     when "011" => alu_operation <= ALU_SLTU;
+                    when "001" =>
+                        alu_operation <= ALU_SLL;
+                        if funct7 /= "0000000" then valid <= '0'; end if;
+                    when "101" =>
+                        if funct7 = "0000000" then alu_operation <= ALU_SRL;
+                        elsif funct7 = "0100000" then alu_operation <= ALU_SRA;
+                        else valid <= '0'; end if;
                     when others => valid <= '0';
                 end case;
             when OPCODE_LOAD =>
-                if funct3 = "010" then
+                if funct3 = "000" or funct3 = "001" or funct3 = "010" or funct3 = "100" or funct3 = "101" then
                     reg_write <= '1'; alu_src <= '1'; alu_operation <= ALU_ADD;
                     mem_read <= '1'; mem_to_reg <= '1'; immediate_type <= IMM_I;
                 else
                     valid <= '0';
                 end if;
             when OPCODE_STORE =>
-                if funct3 = "010" then
+                if funct3 = "000" or funct3 = "001" or funct3 = "010" then
                     alu_src <= '1'; alu_operation <= ALU_ADD;
                     mem_write <= '1'; immediate_type <= IMM_S;
                 else
                     valid <= '0';
                 end if;
             when OPCODE_BRANCH =>
-                if funct3 = "000" or funct3 = "001" then
+                if funct3 = "000" or funct3 = "001" or funct3 = "100" or funct3 = "101" or funct3 = "110" or funct3 = "111" then
                     branch <= '1';
                     if funct3 = "001" then branch_ne <= '1'; end if;
                     alu_operation <= ALU_SUB; immediate_type <= IMM_B;
@@ -108,6 +137,13 @@ begin
                 reg_write <= '1'; alu_src <= '1'; alu_operation <= ALU_COPY_B; immediate_type <= IMM_U;
             when OPCODE_AUIPC =>
                 reg_write <= '1'; alu_src <= '1'; alu_operation <= ALU_ADD; immediate_type <= IMM_U;
+            when "0001111" =>
+                if funct3 /= "000" then valid <= '0'; end if;
+            when OPCODE_SYSTEM =>
+                if funct3 = "000" then
+                    if instruction /= x"00000073" and instruction /= x"00100073" and instruction /= x"30200073" then valid <= '0'; end if;
+                elsif funct3 = "100" then valid <= '0';
+                else reg_write <= '1'; end if;
             when others =>
                 valid <= '0';
         end case;

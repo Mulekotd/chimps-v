@@ -14,12 +14,27 @@ begin
     process
     begin
         rst <= '1'; wait until rising_edge(clk); rst <= '0';
+        operation <= MUL_OP; operand_a <= x"FFFFFFFE"; operand_b <= x"00000003"; start <= '1';
+        wait until rising_edge(clk); start <= '0'; wait until rising_edge(clk); wait for 1 ns;
+        assert done = '1' and result = x"FFFFFFFA" report "MUL low product failed" severity error;
         operation <= MULH_OP; operand_a <= x"FFFFFFFF"; operand_b <= x"00000002"; start <= '1';
         wait until rising_edge(clk); start <= '0'; wait until rising_edge(clk); wait for 1 ns;
         assert done = '1' and result = x"FFFFFFFF" report "MULH signed failed" severity error;
+        operation <= MULHSU_OP; operand_a <= x"FFFFFFFF"; operand_b <= x"00000002"; start <= '1';
+        wait until rising_edge(clk); start <= '0'; wait until rising_edge(clk); wait for 1 ns;
+        assert result = x"FFFFFFFF" report "MULHSU signed/unsigned failed" severity error;
+        operation <= MULHU_OP; operand_a <= x"FFFFFFFF"; operand_b <= x"00000002"; start <= '1';
+        wait until rising_edge(clk); start <= '0'; wait until rising_edge(clk); wait for 1 ns;
+        assert result = x"00000001" report "MULHU unsigned failed" severity error;
         operation <= DIV_OP; operand_a <= x"80000000"; operand_b <= x"FFFFFFFF"; start <= '1';
         wait until rising_edge(clk); start <= '0'; wait until rising_edge(clk); wait for 1 ns;
         assert result = x"80000000" report "DIV overflow rule failed" severity error;
+        operation <= DIVU_OP; operand_a <= x"00000007"; operand_b <= x"00000002"; start <= '1';
+        wait until rising_edge(clk); start <= '0'; wait until rising_edge(clk); wait for 1 ns;
+        assert result = x"00000003" report "DIVU failed" severity error;
+        operation <= REM_OP; operand_a <= x"FFFFFFF9"; operand_b <= x"00000002"; start <= '1';
+        wait until rising_edge(clk); start <= '0'; wait until rising_edge(clk); wait for 1 ns;
+        assert result = x"FFFFFFFF" report "REM signed failed" severity error;
         operation <= REMU_OP; operand_a <= x"12345678"; operand_b <= x"00000000"; start <= '1';
         wait until rising_edge(clk); start <= '0'; wait until rising_edge(clk); wait for 1 ns;
         assert result = x"12345678" report "REMU divide-by-zero rule failed" severity error;

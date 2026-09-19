@@ -7,7 +7,7 @@ package chimps_pkg is
     constant DATA_WIDTH           : natural := 32;
     constant ADDR_WIDTH           : natural := 32;
     constant REG_WIDTH            : natural := 5;
-    constant MEMORY_BYTES         : natural := 32768;
+    constant MEMORY_BYTES         : natural := 98304;
     constant CACHE_LINE_BYTES     : natural := 16;
     constant CACHE_CAPACITY_BYTES : natural := 1024;
     constant CACHE_SETS           : natural := CACHE_CAPACITY_BYTES / CACHE_LINE_BYTES;
@@ -16,7 +16,7 @@ package chimps_pkg is
     -- Operações da ALU selecionadas pelo decoder de instruções.
     type alu_operation_t is (
         ALU_ADD, ALU_SUB, ALU_AND, ALU_OR, ALU_XOR, ALU_SLT, ALU_SLTU,
-        ALU_COPY_B, ALU_NONE
+        ALU_COPY_B, ALU_SLL, ALU_SRL, ALU_SRA, ALU_NONE
     );
 
     -- Encodings de imediatos RISC-V suportados pelo datapath atual.

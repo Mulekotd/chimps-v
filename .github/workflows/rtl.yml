@@ -1,0 +1,17 @@
+name: RTL
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ghdl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the pinned GHDL image
+        run: docker compose build rtl
+      - name: Lint RTL
+        run: docker compose run --rm rtl scripts/lint-rtl.sh
+      - name: Run RTL and integration suite
+        run: docker compose run --rm rtl

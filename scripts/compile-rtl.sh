@@ -15,7 +15,7 @@ if [[ "$#" -ne 0 ]]; then
 fi
 
 command -v ghdl >/dev/null 2>&1 || {
-    echo "GHDL não foi encontrado. Execute este script pelo serviço Docker 'rtl'." >&2
+    echo "GHDL não foi encontrado." >&2
     exit 127
 }
 
@@ -29,6 +29,8 @@ rtl_sources=(
     "${project_root}/rtl/register_file.vhd"
     "${project_root}/rtl/fp_register_file.vhd"
     "${project_root}/rtl/ram.vhd"
+    "${project_root}/rtl/memory_bus.vhd"
+    "${project_root}/rtl/cache_l1.vhd"
     "${project_root}/rtl/l1_direct_mapped_cache.vhd"
     "${project_root}/rtl/instruction_cache.vhd"
     "${project_root}/rtl/data_cache.vhd"
@@ -42,6 +44,7 @@ for source in "${rtl_sources[@]}"; do
 done
 
 ghdl -s --std=08 "${rtl_sources[@]}"
+
 if "${lint_only}"; then
     echo "Lint RTL concluído."
     exit 0
@@ -60,10 +63,12 @@ mapfile -t test_sources < <(find "${project_root}/tests/vhdl" -maxdepth 1 -type 
 for source in "${test_sources[@]}"; do
     ghdl -a --std=08 "--workdir=${build_directory}" "${source}"
 done
+
 for source in "${test_sources[@]}"; do
     testbench="$(basename "${source}" .vhd)"
+
     ghdl -e --std=08 "--workdir=${build_directory}" "${testbench}"
-    ghdl -r --std=08 "--workdir=${build_directory}" "${testbench}" --assert-level=error --stop-time=1us
+    ghdl -r --std=08 "--workdir=${build_directory}" "${testbench}" --assert-level=error --stop-time=1ms
 done
 
 echo "Compilação e ${#test_sources[@]} testbenches concluídos."

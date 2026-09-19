@@ -14,15 +14,15 @@ instruções especiais de pilha: a convenção usa `ADDI x2,x2,-n`, `SW rs,off(x
 
 ## Conjunto de instruções
 
-| Grupo | Instruções exigidas |
-| --- | --- |
-| Inteiro imediato | `ADDI`, `SLTI`, `SLTIU`, `XORI`, `ORI`, `ANDI`, `SLLI`, `SRLI`, `SRAI`, `LUI`, `AUIPC` |
-| Inteiro registrador | `ADD`, `SUB`, `SLL`, `SLT`, `SLTU`, `XOR`, `SRL`, `SRA`, `OR`, `AND` |
-| Memória | `LB`, `LH`, `LW`, `LBU`, `LHU`, `SB`, `SH`, `SW` |
-| Controle | `BEQ`, `BNE`, `BLT`, `BGE`, `BLTU`, `BGEU`, `JAL`, `JALR`, `FENCE`, `ECALL`, `EBREAK` |
-| M | `MUL`, `MULH`, `MULHSU`, `MULHU`, `DIV`, `DIVU`, `REM`, `REMU` |
-| Zicsr | `CSRRW`, `CSRRS`, `CSRRC`, `CSRRWI`, `CSRRSI`, `CSRRCI` |
-| F (marco posterior) | `FLW`, `FSW`, aritmética binary32, conversões, comparação/classificação e `fcsr` |
+| Grupo               | Instruções exigidas                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| Inteiro imediato    | `ADDI`, `SLTI`, `SLTIU`, `XORI`, `ORI`, `ANDI`, `SLLI`, `SRLI`, `SRAI`, `LUI`, `AUIPC` |
+| Inteiro registrador | `ADD`, `SUB`, `SLL`, `SLT`, `SLTU`, `XOR`, `SRL`, `SRA`, `OR`, `AND`                   |
+| Memória             | `LB`, `LH`, `LW`, `LBU`, `LHU`, `SB`, `SH`, `SW`                                       |
+| Controle            | `BEQ`, `BNE`, `BLT`, `BGE`, `BLTU`, `BGEU`, `JAL`, `JALR`, `FENCE`, `ECALL`, `EBREAK`  |
+| M                   | `MUL`, `MULH`, `MULHSU`, `MULHU`, `DIV`, `DIVU`, `REM`, `REMU`                         |
+| Zicsr               | `CSRRW`, `CSRRS`, `CSRRC`, `CSRRWI`, `CSRRSI`, `CSRRCI`                                |
+| F (marco posterior) | `FLW`, `FSW`, aritmética binary32, conversões, comparação/classificação e `fcsr`       |
 
 `FENCE` é aceito como NOP no núcleo unicore sem dispositivo concorrente; `ECALL` e
 `EBREAK` produzem trap. Instrução reservada, extensão não suportada, endereço
@@ -36,14 +36,14 @@ São implementáveis no modo Machine mínimo: `mstatus` (somente campos necessá
 instrução ilegal. `mcycle` conta ciclos e `minstret` conta instruções aposentadas;
 uma escrita explícita em `minstret` substitui o incremento implícito naquele ciclo.
 
-| Causa | `mcause` |
-| --- | --- |
-| instrução ilegal | 2 |
-| breakpoint | 3 |
-| endereço de instrução desalinhado | 0 |
-| load desalinhado/falha | 4 / 5 |
-| store/AMO desalinhado/falha | 6 / 7 |
-| ecall de modo M | 11 |
+| Causa                             | `mcause` |
+| --------------------------------- | -------- |
+| instrução ilegal                  | 2        |
+| breakpoint                        | 3        |
+| endereço de instrução desalinhado | 0        |
+| load desalinhado/falha            | 4 / 5    |
+| store/AMO desalinhado/falha       | 6 / 7    |
+| ecall de modo M                   | 11       |
 
 Na entrada de trap, gravar `mepc`, `mcause` e `mtval`, anular instruções jovens e
 desviar a `mtvec`. O `SIM_CONTROL` MMIO pode encerrar a simulação, mas não altera

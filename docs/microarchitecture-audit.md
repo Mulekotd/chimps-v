@@ -33,8 +33,8 @@ referência verificável antes de transformá-la no núcleo pipeline.
 | Pipeline de cinco estágios | Não atende | Não existem registradores IF/ID, ID/EX, EX/MEM, MEM/WB nem unidade de controle temporal. |
 | Hazards, forwarding, stalls e flushes | Não atende | O PC possui `pc_write`, mas o núcleo o fixa em `'1'`; não há hazard/forwarding unit. |
 | RAM unificada Von Neumann | Parcialmente atende | `main_memory` é uma RAM backing comum, porém a interface tem duas leituras combinacionais e ainda não há cache/controlador de memória. |
-| L1 direta | Parcialmente atende | `l1_direct_mapped_cache.vhd` implementa 64 conjuntos, linha de 16 B, tag/valid, refill, write-through, máscara de bytes, erro e métricas; ainda não está integrada ao core. |
-| I-cache/D-cache finais | Parcialmente atende | Existem wrappers RTL `instruction_cache` e `data_cache`; faltam integração no pipeline, arbitragem e D-cache write-back/2-way. |
+| L1 direta | Parcialmente atende | `l1_direct_mapped_cache.vhd` implementa 64 conjuntos, linha de 16 B, tag/valid, refill, write-through, máscara de bytes, erro e métricas; o `memory_bus` agora arbitra as portas, mas o core ainda não usa a interface cacheada. |
+| I-cache/D-cache finais | Parcialmente atende | Existem wrappers RTL `instruction_cache` e `data_cache` e um árbitro de duas portas; faltam integração no pipeline, controlador de backing e D-cache write-back/2-way. |
 | Buffering de I/O | Não atende | Não há MMIO, UART, FIFO RX/TX ou mapa de dispositivos implementado. |
 | `RV32M` | Parcialmente atende | `mul_div_unit.vhd` e testbench cobrem a unidade isolada, incluindo divisão por zero/overflow; faltam execução no container e integração ao decoder/core. |
 | `RV32F`/IEEE 754 | Parcialmente atende | Há FPRs e unidade binary32 para classificação, sign-inject, min/max e comparações; faltam aritmética, conversões, `FLW/FSW`, `fcsr` e integração. |
@@ -43,7 +43,7 @@ referência verificável antes de transformá-la no núcleo pipeline.
 | CLI/TUI headless | Não atende | Ainda não há executável de simulação nem interface de terminal. |
 | Carregador de imagens | Não atende | A RAM possui uma porta de carregamento, mas ainda não há CLI/harness para carregar imagens `.bin`/`.hex` e validar seu formato. |
 | TDD/SDD | Parcialmente atende | Há testes para ALU, PC, imediatos, decoder, GPR/FPR, RAM, L1, FPU e núcleo; faltam integração pipeline e testes diferenciais. |
-| Docker/CI | Parcialmente atende | Há `dockerfiles/rtl/Dockerfile`, `compose.yml` e comandos reprodutíveis; ainda não há workflow de CI. |
+| Docker/CI | Atende para RTL | O workflow `.github/workflows/rtl.yml` constrói a imagem fixa, executa lint e a suíte no Compose; `scripts/run-smoke-docker.sh` prova o mesmo fluxo local. |
 
 ## 3. Microcircuitos e comunicação
 
@@ -57,6 +57,7 @@ referência verificável antes de transformá-la no núcleo pipeline.
 | `register_file.vhd` | 32 GPRs, duas leituras e uma escrita | endereços rs1/rs2/rd, write-back | ALU, branch e RAM |
 | `ram.vhd` | Backing store Von Neumann de 32 KiB | endereços, dados, máscaras | instrução, loads e cache |
 | `l1_direct_mapped_cache.vhd` | L1 direta: tag/valid, lookup, refill e write-through | request CPU + memória backing | CPU, RAM e contadores GUI |
+| `memory_bus.vhd` | Arbitragem de fetch e dados para o backing | duas requisições valid/ready | um alvo e resposta ao mestre selecionado |
 | `mul_div_unit.vhd` | Operações RV32M com handshake de uma borda | `start`, operação, operandos | resultado, `busy`, `done` para EX/WB futuro |
 | `core_rv32i_single.vhd` | Integração single-cycle da referência | clock, reset, loader | PC, RAM, decoder, RF e ALU |
 
@@ -91,27 +92,15 @@ deve ocorrer por um barramento explícito, não por conexões ad hoc.
 3. **Completar a RAM.** Definir acessos LB/LBU/LH/LHU/LW, SB/SH/SW, máscaras,
    alinhamento, latência e erro de endereço. A RAM deve ser backing store, não o
    lugar onde a política de cache fica escondida.
-4. **Criar uma interface de memória.** Usar um request/response explícito com
-   `valid`, `ready`, `we`, `address`, `wdata`, `wmask`, `rdata`, `error` e
-   identificador de origem. Isso permitirá ligar I-cache, D-cache e MMIO sem
-   alterar a ISA.
+4. **Integrar a interface de memória já criada.** `memory_bus.vhd` tem duas portas
+   `valid/ready` com `we`, `address`, `wdata`, `wmask`, `rdata` e `error`, e é
+   contraprova por testbench. Falta o controlador de backing/MMIO e fazer o core
+   emitir essas transações e parar por `ready`.
 5. **Criar um bundle de controle de pipeline.** Agrupar `valid`, `pc`, instruction,
    `rs1_value`, `rs2_value`, `rd`, immediate, ALU control, memory control e
    write-back control em registros entre estágios.
 
-## 5. Próximos passos de implementação
-
-### Fase A — especificação e verificação da referência
-
-1. Criar `docs/adr/001-vhdl-toolchain.md` e registrar VHDL-2008, GHDL, VUnit ou
-   OSVVM, convenções de reset, endianess e política de memória.
-2. Criar `specs/isa-rv32i-chimps-v1.md` com tabela de instruções, encodings,
-   estados afetados, traps e exemplos como words codificadas ou imagens `.hex`.
-3. Adicionar testes para `imm_gen`, decoder, register file e RAM.
-4. Criar um testbench do núcleo que carrega words pela porta `load_*` e verifica
-   PC, `retired`, stores, loads e branches.
-5. Adicionar compilação no Docker/CI. Não iniciar o pipeline sem um teste verde
-   da referência single-cycle.
+## 5. Pendências de implementação
 
 ### Fase B — pipeline de cinco estágios
 
@@ -127,15 +116,15 @@ Implementar nesta ordem:
 
 ### Fase C — memória, cache e I/O
 
-1. Colocar um barramento de memória entre o core e a RAM.
-2. Implementar primeiro I-cache direta, read-only, com hit/miss e refill.
-3. Implementar D-cache direta com write-through no primeiro marco; só depois
+1. Conectar as portas do `memory_bus` já verificadas às L1 existentes, criar o
+   controlador de backing e migrar o core para `valid/ready` com stall.
+2. Só depois
    evoluir para 2-way, write-back e write-allocate.
-4. Adicionar MMIO como um destino do barramento, sem colocar lógica UART dentro
+3. Adicionar MMIO como um destino do barramento, sem colocar lógica UART dentro
    da RAM.
-5. Implementar FIFOs RX/TX com `empty`, `full`, `count`, `push`, `pop` e
+4. Implementar FIFOs RX/TX com `empty`, `full`, `count`, `push`, `pop` e
    backpressure; criar os endereços do mapa de memória no `CONTEXT.md`.
-6. Expor contadores de hit, miss, write-back, stalls e latência para a GUI.
+5. Expor contadores de hit, miss, write-back, stalls e latência para a GUI.
 
 ### Fase D — definição e integração das extensões ISA
 
@@ -167,6 +156,14 @@ contrato, não ler sinais privados nem reimplementar o decoder.
 O primeiro vertical slice visual deve mostrar `ADDI` e `LW` passando por PC,
 RAM, register file e ALU, com um botão de passo e o barramento destacado. Só
 depois adicionar cache, FPU, MMIO e detalhes avançados ao esquemático.
+
+### Verificação pendente
+
+1. Adicionar carregador `.bin`/`.hex` com diagnóstico de formato e testes, e
+   comparar programas do subconjunto contra uma referência RISC-V.
+2. Estender os testes de integração para o core cacheado, traps, MMIO, FIFOs,
+   M/F integradas e traces de pipeline. A regressão atual já cobre os blocos RTL
+   isolados, barramento, smoke Docker e roteiro de demonstração.
 
 ## 6. Critérios para considerar a microarquitetura integrada
 
