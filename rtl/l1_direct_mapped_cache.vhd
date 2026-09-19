@@ -63,8 +63,8 @@ architecture Behavioral of l1_direct_mapped_cache is
         old_value : STD_LOGIC_VECTOR(31 downto 0);
         new_value : STD_LOGIC_VECTOR(31 downto 0);
         byte_mask : STD_LOGIC_VECTOR(3 downto 0)
-    ) return STD_LOGIC_VECTOR is
-        variable merged : STD_LOGIC_VECTOR(31 downto 0) := old_value;
+    ) return STD_LOGIC_VECTOR is variable merged : STD_LOGIC_VECTOR(31 downto 0) := old_value;
+
     begin
         if byte_mask(0) = '1' then merged(7 downto 0) := new_value(7 downto 0); end if;
         if byte_mask(1) = '1' then merged(15 downto 8) := new_value(15 downto 8); end if;
@@ -89,7 +89,7 @@ begin
 
         if state = REFILL then
             -- Uma linha de 16 bytes contém quatro words de 32 bits.
-            refill_address := unsigned(request_address(31 downto 4) & "0000") +
+            refill_address := shift_left(resize(unsigned(request_address(31 downto 4)), 32), 4) +
                               to_unsigned(refill_word * 4, 32);
             memory_valid <= '1';
             memory_address <= std_logic_vector(refill_address);
@@ -177,6 +177,7 @@ begin
 
                                 if refill_word = CACHE_WORDS_PER_LINE - 1 then
                                     valid_array(set_index) <= '1';
+
                                     if request_write = '1' then
                                         data_array(set_index)(word_index) <= merge_bytes(
                                             data_array(set_index)(word_index), request_write_data, request_write_mask);
@@ -200,6 +201,13 @@ begin
                         if memory_ready = '1' then
                             response_error <= memory_error;
                             response_data <= (others => '0');
+
+                            -- Uma falha na escrita impede que a cópia local seja usada.
+                            if memory_error = '1' then
+                                set_index := to_integer(unsigned(request_address(9 downto 4)));
+                                valid_array(set_index) <= '0';
+                            end if;
+
                             state <= RESPONSE;
                         end if;
 

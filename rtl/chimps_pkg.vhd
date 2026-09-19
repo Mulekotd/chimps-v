@@ -22,6 +22,9 @@ package chimps_pkg is
     -- Encodings de imediatos RISC-V suportados pelo datapath atual.
     type immediate_type_t is (IMM_NONE, IMM_I, IMM_S, IMM_B, IMM_U, IMM_J);
 
+    type mul_div_operation_t is (MUL_OP, MULH_OP, MULHSU_OP, MULHU_OP,
+                                 DIV_OP, DIVU_OP, REM_OP, REMU_OP);
+
     constant OPCODE_OP     : STD_LOGIC_VECTOR(6 downto 0) := "0110011";
     constant OPCODE_OP_IMM : STD_LOGIC_VECTOR(6 downto 0) := "0010011";
     constant OPCODE_LOAD   : STD_LOGIC_VECTOR(6 downto 0) := "0000011";

@@ -143,6 +143,7 @@ begin
                       alu_result;
     writeback_enable <= reg_write and decode_valid;
 
+    process(clk)
     begin
         if rising_edge(clk) then
             if rst = '1' then
