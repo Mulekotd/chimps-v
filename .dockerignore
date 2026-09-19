@@ -1,5 +1,4 @@
 .git
 .agents
 .codex
-build
-docs/books
+docs

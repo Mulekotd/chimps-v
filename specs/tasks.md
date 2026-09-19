@@ -13,11 +13,11 @@ Lista operacional derivada do [`/CONTEXT.md`](/CONTEXT.md) e da auditoria em
 
 ## Prioridade imediata — referência e integração da L1
 
-- [ ] Criar ADRs 001–006: ISA, Von Neumann/cache, pipeline/hazards, FPU,
+- [x] Criar ADRs 001–006: ISA, Von Neumann/cache, pipeline/hazards, FPU,
   toolchain VHDL e GUI/`CycleSnapshot`.
 - [x] Criar `specs/isa-rv32i-chimps-v1.md` com perfil RV32I/M/Zicsr/F, stack de
   software, CSRs mínimos, traps e conjunto de instruções.
-- [ ] Criar `specs/memory-map.md`, `specs/memory-bus.md` e `specs/cycle-snapshot.md`.
+- [x] Criar `specs/memory-map.md`, `specs/memory-bus.md` e `specs/cycle-snapshot.md`.
 - [x] Adicionar testbenches para `imm_gen`, decoder, register file e RAM.
 - [x] Criar testbench de integração do `core_rv32i_single` usando a porta `load_*`.
 - [x] Criar testbench da L1 direta: hit, miss, refill de quatro words, write-through,
