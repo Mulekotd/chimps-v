@@ -1,8 +1,6 @@
 # CHIMPS-V
 
-CHIMPS-V é um simulador de uma microarquitetura RISC-V descrita em
-VHDL-2008. O RTL é a fonte de verdade; ferramentas de host apenas carregam programas,
-dirigem a simulação e apresentam snapshots.
+CHIMPS-V é um simulador de uma microarquitetura RISC-V descrita em VHDL-2008. O RTL é a fonte de verdade; ferramentas de host apenas carregam programas, dirigem a simulação e apresentam snapshots.
 
 ## Decisões arquiteturais
 
@@ -20,8 +18,7 @@ dirigem a simulação e apresentam snapshots.
 | Observabilidade | GUI e CLI devem consumir o mesmo `CycleSnapshot` versionado.                                 |
 | Ferramentas     | GHDL/VHDL-2008 e Docker Compose; C11 para o CLI.                                             |
 
-Os detalhes e limitações atuais estão em [auditoria](docs/audits/microarchitecture.md),
-[ADRs](docs/adr/) e [tarefas do projeto](docs/project/tasks.md).
+Os detalhes e limitações atuais estão em [auditoria](docs/audits/microarchitecture.md), [ADRs](docs/adr/) e [tarefas do projeto](docs/project/tasks.md).
 
 ## Usar o RTL
 
@@ -38,13 +35,9 @@ Para executar somente a análise estática:
 docker compose run --rm rtl scripts/lint-rtl.sh
 ```
 
-O serviço monta o repositório em `/workspace`, compila todas as fontes listadas em
-`scripts/compile-rtl.sh` e executa cada `tests/vhdl/tb_*.vhd`. Um retorno zero indica
-que todos os testbenches concluíram sem `severity error`.
+O serviço monta o repositório em `/workspace`, compila todas as fontes listadas em `scripts/compile-rtl.sh` e executa cada `tests/vhdl/tb_*.vhd`. Um retorno zero indica que todos os testbenches concluíram sem `severity error`.
 
-O core ainda não recebe arquivos diretamente. Os testbenches carregam words pela
-porta `load_*` durante reset. A ligação do loader do CLI ao GHDL está registrada no
-backlog.
+O core ainda não recebe arquivos diretamente. Os testbenches carregam words pela porta `load_*` durante reset. A ligação do loader do CLI ao GHDL está registrada no backlog.
 
 ## Usar o CLI inicial
 
@@ -62,20 +55,15 @@ cli/build/chimps-v load path/to/program.bin
 cli/build/chimps-v load path/to/program.bin --address 0x100
 ```
 
-O comando rejeita extensão incorreta, imagem vazia, tamanho que não seja múltiplo
-de quatro, endereço desalinhado e imagem que ultrapasse a RAM. Para usar o ambiente
-containerizado:
+O comando rejeita extensão incorreta, imagem vazia, tamanho que não seja múltiplo de quatro, endereço desalinhado e imagem que ultrapasse a RAM. Para usar o ambiente containerizado:
 
 ```sh
 docker compose build cli
 docker compose run --rm cli
 ```
 
-Neste marco, `load` valida e mantém a imagem no processo; execução, stepping e trace
-ainda serão conectados ao simulador.
+Neste marco, `load` valida e mantém a imagem no processo; execução, stepping e trace ainda serão conectados ao simulador.
 
 ## Software executado pelo core
 
-Código destinado ao processador fica em `software/`, separado do CLI nativo. O
-diretório já contém o ponto de entrada, linker script e endereços MMIO para futuros
-programas C. Um toolchain RISC-V externo produzirá exclusivamente imagens `.bin`.
+Código destinado ao processador fica em `software/`, separado do CLI nativo. O diretório já contém o ponto de entrada, linker script e endereços MMIO para futuros programas C. Um toolchain RISC-V externo produzirá exclusivamente imagens `.bin`.

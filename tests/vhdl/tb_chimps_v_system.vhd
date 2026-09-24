@@ -8,9 +8,11 @@ architecture Behavioral of tb_chimps_v_system is
     signal load_address, load_data : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     signal load_mask : STD_LOGIC_VECTOR(3 downto 0) := "1111";
     signal debug_address, debug_data, current_pc, current_instruction : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
-    signal retired, halted, illegal_instruction : STD_LOGIC;
+    signal retired, halted, illegal_instruction, trap : STD_LOGIC;
+    signal trap_cause : STD_LOGIC_VECTOR(31 downto 0);
     signal fp_fflags : STD_LOGIC_VECTOR(4 downto 0);
-    signal i_accesses, i_misses, d_accesses, d_misses : STD_LOGIC_VECTOR(31 downto 0);
+    signal i_accesses, i_hits, i_misses, i_writebacks, i_service, i_stalls, i_amat : STD_LOGIC_VECTOR(31 downto 0);
+    signal d_accesses, d_hits, d_misses, d_writebacks, d_service, d_stalls, d_amat : STD_LOGIC_VECTOR(31 downto 0);
 begin
     dut : entity work.chimps_v_system
         port map (
@@ -18,12 +20,18 @@ begin
             load_valid => load_valid, load_address => load_address,
             load_data => load_data, load_mask => load_mask, load_ready => load_ready,
             flush_data_cache => flush_data_cache,
+            uart_rx_ready => open, uart_tx_valid => open, uart_tx_data => open,
             debug_address => debug_address, debug_data => debug_data,
             current_pc => current_pc, current_instruction => current_instruction,
             retired => retired, halted => halted, illegal_instruction => illegal_instruction,
+            trap => trap, trap_cause => trap_cause,
             fp_fflags => fp_fflags,
-            instruction_accesses => i_accesses, instruction_misses => i_misses,
-            data_accesses => d_accesses, data_misses => d_misses
+            instruction_accesses => i_accesses, instruction_hits => i_hits, instruction_misses => i_misses,
+            instruction_writebacks => i_writebacks, instruction_service_cycles => i_service,
+            instruction_stalls => i_stalls, instruction_amat => i_amat,
+            data_accesses => d_accesses, data_hits => d_hits, data_misses => d_misses,
+            data_writebacks => d_writebacks, data_service_cycles => d_service,
+            data_stalls => d_stalls, data_amat => d_amat
         );
 
     clk <= not clk after 5 ns;
@@ -73,6 +81,10 @@ begin
         assert i_accesses /= x"00000000" and i_misses /= x"00000000" and
                d_accesses /= x"00000000" and d_misses /= x"00000000"
             report "Integrated caches were not used by the core" severity error;
+        assert i_hits /= x"00000000" and i_service /= x"00000000" and i_stalls /= x"00000000" and
+               d_hits /= x"00000000" and d_writebacks /= x"00000000" and d_service /= x"00000000" and
+               d_stalls /= x"00000000" and d_amat /= x"00000000"
+            report "Integrated cache metrics were not exposed" severity error;
         assert false report "tb_chimps_v_system completed" severity note;
         wait;
     end process;

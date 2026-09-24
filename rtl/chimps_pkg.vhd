@@ -4,15 +4,15 @@ use IEEE.NUMERIC_STD.ALL;
 
 package chimps_pkg is
     -- Dimensões globais compartilhadas por todos os circuitos.
-    constant DATA_WIDTH           : natural := 32;
-    constant ADDR_WIDTH           : natural := 32;
-    constant REG_WIDTH            : natural := 5;
-    constant MEMORY_BYTES         : natural := 98304;
-    constant L1_CACHE_BYTES       : natural := 1024;
-    constant L1_CACHE_LINE_BYTES  : natural := 16;
-    constant L1_WORDS_PER_LINE    : natural := L1_CACHE_LINE_BYTES / 4;
-    constant I_CACHE_SETS         : natural := L1_CACHE_BYTES / L1_CACHE_LINE_BYTES;
-    constant D_CACHE_SETS         : natural := I_CACHE_SETS / 2;
+    constant DATA_WIDTH          : natural := 32;
+    constant ADDR_WIDTH          : natural := 32;
+    constant REG_WIDTH           : natural := 5;
+    constant MEMORY_BYTES        : natural := 98304;
+    constant L1_CACHE_BYTES      : natural := 1024;
+    constant L1_CACHE_LINE_BYTES : natural := 16;
+    constant L1_WORDS_PER_LINE   : natural := L1_CACHE_LINE_BYTES / 4;
+    constant I_CACHE_SETS        : natural := L1_CACHE_BYTES / L1_CACHE_LINE_BYTES;
+    constant D_CACHE_SETS        : natural := I_CACHE_SETS / 2;
 
     -- Operações da ALU selecionadas pelo decoder de instruções.
     type alu_operation_t is (
@@ -24,19 +24,25 @@ package chimps_pkg is
     type immediate_type_t is (IMM_NONE, IMM_I, IMM_S, IMM_B, IMM_U, IMM_J);
 
     type mul_div_operation_t is (MUL_OP, MULH_OP, MULHSU_OP, MULHU_OP,
-                                 DIV_OP, DIVU_OP, REM_OP, REMU_OP);
+                                DIV_OP, DIVU_OP, REM_OP, REMU_OP);
 
-    constant OPCODE_OP     : STD_LOGIC_VECTOR(6 downto 0) := "0110011";
-    constant OPCODE_OP_IMM : STD_LOGIC_VECTOR(6 downto 0) := "0010011";
-    constant OPCODE_LOAD   : STD_LOGIC_VECTOR(6 downto 0) := "0000011";
-    constant OPCODE_STORE  : STD_LOGIC_VECTOR(6 downto 0) := "0100011";
-    constant OPCODE_BRANCH : STD_LOGIC_VECTOR(6 downto 0) := "1100011";
-    constant OPCODE_JALR   : STD_LOGIC_VECTOR(6 downto 0) := "1100111";
-    constant OPCODE_JAL    : STD_LOGIC_VECTOR(6 downto 0) := "1101111";
-    constant OPCODE_LUI    : STD_LOGIC_VECTOR(6 downto 0) := "0110111";
-    constant OPCODE_AUIPC  : STD_LOGIC_VECTOR(6 downto 0) := "0010111";
-    constant OPCODE_OP_FP  : STD_LOGIC_VECTOR(6 downto 0) := "1010011";
-    constant OPCODE_SYSTEM : STD_LOGIC_VECTOR(6 downto 0) := "1110011";
+    constant OPCODE_OP       : STD_LOGIC_VECTOR(6 downto 0) := "0110011";
+    constant OPCODE_OP_IMM   : STD_LOGIC_VECTOR(6 downto 0) := "0010011";
+    constant OPCODE_LOAD     : STD_LOGIC_VECTOR(6 downto 0) := "0000011";
+    constant OPCODE_STORE    : STD_LOGIC_VECTOR(6 downto 0) := "0100011";
+    constant OPCODE_BRANCH   : STD_LOGIC_VECTOR(6 downto 0) := "1100011";
+    constant OPCODE_JALR     : STD_LOGIC_VECTOR(6 downto 0) := "1100111";
+    constant OPCODE_JAL      : STD_LOGIC_VECTOR(6 downto 0) := "1101111";
+    constant OPCODE_LUI      : STD_LOGIC_VECTOR(6 downto 0) := "0110111";
+    constant OPCODE_AUIPC    : STD_LOGIC_VECTOR(6 downto 0) := "0010111";
+    constant OPCODE_OP_FP    : STD_LOGIC_VECTOR(6 downto 0) := "1010011";
+    constant OPCODE_LOAD_FP  : STD_LOGIC_VECTOR(6 downto 0) := "0000111";
+    constant OPCODE_STORE_FP : STD_LOGIC_VECTOR(6 downto 0) := "0100111";
+    constant OPCODE_FMADD    : STD_LOGIC_VECTOR(6 downto 0) := "1000011";
+    constant OPCODE_FMSUB    : STD_LOGIC_VECTOR(6 downto 0) := "1000111";
+    constant OPCODE_FNMSUB   : STD_LOGIC_VECTOR(6 downto 0) := "1001011";
+    constant OPCODE_FNMADD   : STD_LOGIC_VECTOR(6 downto 0) := "1001111";
+    constant OPCODE_SYSTEM   : STD_LOGIC_VECTOR(6 downto 0) := "1110011";
 
     -- Detector combinacional de zero usado pela ALU e pela lógica de branch.
     function is_zero(value : STD_LOGIC_VECTOR) return STD_LOGIC;

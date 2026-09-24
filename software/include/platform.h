@@ -8,5 +8,10 @@
 #define CHIMPSV_UART_RX_DATA   (*(volatile uint32_t *)0xffff0008u)
 #define CHIMPSV_UART_RX_STATUS (*(volatile uint32_t *)0xffff000cu)
 #define CHIMPSV_SIM_CONTROL    (*(volatile uint32_t *)0xffff0010u)
+#define CHIMPSV_STACK_TOP      0x00018000u
+
+static inline void chimpsv_sim_halt(void) {
+    CHIMPSV_SIM_CONTROL = 1u;
+}
 
 #endif

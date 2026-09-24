@@ -39,6 +39,5 @@ begin
         end if;
     end process;
 
-    -- Atribuição contínua convertendo o tipo numérico para standard logic vector.
     current_pc <= std_logic_vector(pc_reg);
 end Behavioral;

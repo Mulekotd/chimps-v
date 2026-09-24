@@ -30,6 +30,7 @@ begin
     begin
         if rising_edge(clk) then
             done_reg <= '0';
+
             if rst = '1' then
                 busy_reg <= '0';
                 result_reg <= (others => '0');
@@ -41,6 +42,7 @@ begin
                 product_ss := signed(operand_a) * signed(operand_b);
                 product_uu := unsigned(operand_a) * unsigned(operand_b);
                 product_su := signed(operand_a) * signed('0' & operand_b);
+
                 case operation is
                     when MUL_OP   => computed := std_logic_vector(product_uu(31 downto 0));
                     when MULH_OP  => computed := std_logic_vector(product_ss(63 downto 32));
@@ -75,11 +77,13 @@ begin
                             computed := std_logic_vector(unsigned(operand_a) rem unsigned(operand_b));
                         end if;
                 end case;
+
                 result_reg <= computed;
                 busy_reg <= '1';
             end if;
         end if;
     end process;
+
     busy <= busy_reg;
     done <= done_reg;
     result <= result_reg;

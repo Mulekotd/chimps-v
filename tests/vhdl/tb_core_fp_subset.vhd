@@ -13,7 +13,7 @@ architecture Behavioral of tb_core_fp_subset is
     signal current_pc, current_instruction : STD_LOGIC_VECTOR(31 downto 0);
     signal fp_fflags : STD_LOGIC_VECTOR(4 downto 0);
     signal retired, halted, illegal_instruction : STD_LOGIC;
-    signal stored_sign, stored_class, stored_equal, stored_nan_compare : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+    signal stored_sign, stored_class, stored_equal, stored_nan_compare, stored_add, stored_load, stored_fcsr : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 begin
     dut : entity work.core_rv32i_single
         port map (
@@ -24,14 +24,14 @@ begin
             data_wdata => data_wdata, data_wmask => data_wmask, data_ready => data_ready,
             data_error => data_error, data_rdata => data_rdata, current_pc => current_pc,
             current_instruction => current_instruction, retired => retired, halted => halted,
-            illegal_instruction => illegal_instruction, fp_fflags => fp_fflags);
+            illegal_instruction => illegal_instruction, trap => open, trap_cause => open, fp_fflags => fp_fflags);
 
     clk <= not clk after 5 ns;
     instruction_ready <= instruction_valid;
     instruction_error <= '0';
     data_ready <= data_valid;
     data_error <= '0';
-    data_rdata <= (others => '0');
+    data_rdata <= x"40000000" when data_address = x"00000054" else (others => '0');
 
     with instruction_address select instruction_rdata <=
         x"3F8000B7" when x"00000000", -- LUI x1,0x3f800
@@ -49,7 +49,17 @@ begin
         x"F0030353" when x"00000030", -- FMV.W.X f6,x6
         x"A01313D3" when x"00000034", -- FLT.S x7,f6,f1
         x"04702623" when x"00000038", -- SW x7,76(x0)
-        x"00000053" when x"0000003C", -- FADD.S f0,f0,f0: not implemented
+        x"00108053" when x"0000003C", -- FADD.S f0,f1,f1
+        x"E0000453" when x"00000040", -- FMV.X.W x8,f0
+        x"04802823" when x"00000044", -- SW x8,80(x0)
+        x"04002A27" when x"00000048", -- FSW f0,84(x0)
+        x"05402487" when x"0000004C", -- FLW f9,84(x0)
+        x"E0048553" when x"00000050", -- FMV.X.W x10,f9
+        x"04A02C23" when x"00000054", -- SW x10,88(x0)
+        x"00100593" when x"00000058", -- ADDI x11,x0,1
+        x"00159673" when x"0000005C", -- CSRRW x12,fflags,x11
+        x"001026F3" when x"00000060", -- CSRRS x13,fflags,x0
+        x"04D02E23" when x"00000064", -- SW x13,92(x0)
         x"00000000" when others;
 
     process(clk)
@@ -60,6 +70,9 @@ begin
                 when x"00000044" => stored_class <= data_wdata;
                 when x"00000048" => stored_equal <= data_wdata;
                 when x"0000004C" => stored_nan_compare <= data_wdata;
+                when x"00000050" => stored_add <= data_wdata;
+                when x"00000058" => stored_load <= data_wdata;
+                when x"0000005C" => stored_fcsr <= data_wdata;
                 when others => null;
             end case;
         end if;
@@ -72,13 +85,16 @@ begin
             wait until rising_edge(clk);
             exit when halted = '1';
         end loop;
-        assert halted = '1' and illegal_instruction = '1' and current_pc = x"0000003C"
-            report "Unsupported FADD.S did not stop as an illegal instruction" severity error;
+        assert halted = '1' and illegal_instruction = '1' and current_pc = x"00000068"
+            report "Core did not stop after FP load/store and FCSR accesses" severity error;
         assert stored_sign = x"BF800000" report "FSGNJ.S result did not return through FPR/GPR" severity error;
         assert stored_class = x"00000002" report "FCLASS.S did not write the integer destination" severity error;
         assert stored_equal = x"00000000" report "FEQ.S did not write the integer destination" severity error;
         assert stored_nan_compare = x"00000000" report "FLT.S NaN result was not written as zero" severity error;
-        assert fp_fflags = "10000" report "FLT.S NaN did not accumulate NV in the core" severity error;
+        assert stored_add = x"40000000" report "FADD.S result did not return through FPR/GPR" severity error;
+        assert stored_load = x"40000000" report "FLW/FSW did not preserve the binary32 word: " & to_hstring(stored_load) severity error;
+        assert stored_fcsr = x"00000001" report "FFLAGS CSR did not expose the written architectural state" severity error;
+        assert fp_fflags = "00001" report "CSRRW did not replace the accrued FFLAGS state" severity error;
         assert false report "tb_core_fp_subset completed" severity note;
         wait;
     end process;

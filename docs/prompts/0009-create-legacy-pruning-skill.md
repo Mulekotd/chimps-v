@@ -9,12 +9,6 @@ Crie uma skill para que sempre que uma nova implementação for feita o código 
 
 ## Output
 
-Criei a skill `legacy-pruning` em `.agents/skills/legacy-pruning/SKILL.md` e a
-validei com o verificador de skills. Ela exige, após uma implementação que substitua
-um caminho existente, auditar dependências, remover fonte/testes/wrappers/manifests/
-documentação obsoletos, confirmar que não restaram referências e executar a
-regressão relevante.
+Criei a skill `legacy-pruning` em `.agents/skills/legacy-pruning/SKILL.md` e a validei com o verificador de skills. Ela exige, após uma implementação que substitua um caminho existente, auditar dependências, remover fonte/testes/wrappers/manifests/ documentação obsoletos, confirmar que não restaram referências e executar a regressão relevante.
 
-Também adicionei `AGENTS.md`, que torna essa auditoria obrigatória no projeto após
-cada substituição ou consolidação e evita remoções especulativas em mudanças apenas
-aditivas.
+Também adicionei `AGENTS.md`, que torna essa auditoria obrigatória no projeto após cada substituição ou consolidação e evita remoções especulativas em mudanças apenas aditivas.

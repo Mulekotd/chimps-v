@@ -12,9 +12,10 @@ por ciclo, devolve `error` para endereços fora dos 96 KiB e não faz alias.
 O core retém PC, instrução e operandos entre `valid` e `ready`. Operações RV32M
 iniciam a unidade M uma vez e só aposentam depois de `done`. Falha de fetch, dados
 ou instrução sem encoding implementado interrompe o core sem escrever GPR ou RAM.
-O subconjunto FP documentado em `fp-subset.md` está conectado. Aritmética,
-conversões, `FLW`/`FSW`, `fcsr` acessível por CSR, traps arquiteturais, MMIO e
-pipeline continuam fora deste marco; portanto, o projeto não anuncia RV32F completo.
+O estado FP documentado em `fp-subset.md` está conectado: aritmética, FMA,
+conversões W/WU, `FLW`/`FSW` e os CSRs `fflags`/`frm`/`fcsr`. RMM, flags precisas
+para todos os casos e validação diferencial ampla continuam fora deste marco;
+portanto, o projeto não anuncia RV32F completo.
 
 ## Estrutura canônica
 

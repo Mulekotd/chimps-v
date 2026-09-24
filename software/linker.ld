@@ -6,6 +6,11 @@ SECTIONS {
     .text : { KEEP(*(.text.start)) *(.text*) } > RAM
     .rodata : { *(.rodata*) } > RAM
     .data : { *(.data*) } > RAM
-    .bss : { *(.bss*) *(COMMON) } > RAM
+    .bss (NOLOAD) : {
+        __bss_start = .;
+        *(.bss*) *(COMMON)
+        __bss_end = .;
+    } > RAM
     __stack_top = ORIGIN(RAM) + LENGTH(RAM);
+    ASSERT(__stack_top >= . + 256, "RAM image leaves less than 256 bytes for stack")
 }

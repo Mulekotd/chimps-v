@@ -3,10 +3,7 @@
 - Estado: aceito
 - Data: 2026-09-19
 
-FP usa binary32 e 32 FPRs. O core já conecta sign injection, min/max, comparações,
-classificação, `FMV.W.X`/`FMV.X.W` e o acumulador observável de `fflags`; `fcsr`
-(`frm`/`fflags`) ainda não é acessível por CSR. A conformidade RV32F só é declarada
-após operações, loads/stores, arredondamento e comparação contra SoftFloat.
+FP usa binary32, 32 FPRs e o estado `fcsr` formado por `frm`/`fflags`. O core conecta operações de sinal, min/max, comparações, classificação, aritmética, FMA, conversões W/WU, `FLW`/`FSW` e os acessos Zicsr a `fflags`, `frm` e `fcsr`. O oráculo SoftFloat 3e confere vetores dirigidos. Conformidade RV32F completa permanece condicionada a RMM e validação diferencial extensa de flags/subnormais. A semântica normativa e os limites implementados estão em [`specs/fp-subset.md`](/specs/fp-subset.md).
 
 ## Reference check
 

@@ -31,6 +31,8 @@ rtl_sources=(
     "${project_root}/rtl/memory_backing_store.vhd"
     "${project_root}/rtl/memory_bus.vhd"
     "${project_root}/rtl/cache_l1.vhd"
+    "${project_root}/rtl/byte_fifo.vhd"
+    "${project_root}/rtl/mmio_uart.vhd"
     "${project_root}/rtl/fpu.vhd"
     "${project_root}/rtl/mul_div_unit.vhd"
     "${project_root}/rtl/core_rv32i_single.vhd"

@@ -6,14 +6,23 @@ use IEEE.NUMERIC_STD.ALL;
 package fp_pkg is
     subtype fp32_t is STD_LOGIC_VECTOR(31 downto 0);
     type fp_operation_t is (FP_SGNJ, FP_SGNJN, FP_SGNJX, FP_MIN, FP_MAX,
-                            FP_EQ, FP_LT, FP_LE, FP_CLASS);
+                            FP_EQ, FP_LT, FP_LE, FP_CLASS,
+                            FP_ADD, FP_SUB, FP_MUL, FP_DIV, FP_SQRT,
+                            FP_MADD, FP_MSUB, FP_NMSUB, FP_NMADD,
+                            FP_CVT_W_S, FP_CVT_WU_S, FP_CVT_S_W, FP_CVT_S_WU);
 
     constant FFLAG_NV : STD_LOGIC_VECTOR(4 downto 0) := "10000";
+    constant FFLAG_DZ : STD_LOGIC_VECTOR(4 downto 0) := "01000";
+    constant FFLAG_OF : STD_LOGIC_VECTOR(4 downto 0) := "00100";
+    constant FFLAG_UF : STD_LOGIC_VECTOR(4 downto 0) := "00010";
+    constant FFLAG_NX : STD_LOGIC_VECTOR(4 downto 0) := "00001";
     constant FP_CANONICAL_NAN : fp32_t := x"7FC00000";
 
     function fp_is_nan(value : fp32_t) return boolean;
     function fp_is_snan(value : fp32_t) return boolean;
     function fp_is_zero(value : fp32_t) return boolean;
+    function fp_is_inf(value : fp32_t) return boolean;
+    function fp_is_negative(value : fp32_t) return boolean;
     function fp_less(left_value, right_value : fp32_t) return boolean;
     function fp_class(value : fp32_t) return fp32_t;
 end package fp_pkg;
@@ -32,6 +41,16 @@ package body fp_pkg is
     function fp_is_zero(value : fp32_t) return boolean is
     begin
         return value(30 downto 0) = (30 downto 0 => '0');
+    end function;
+
+    function fp_is_inf(value : fp32_t) return boolean is
+    begin
+        return value(30 downto 23) = x"FF" and value(22 downto 0) = (22 downto 0 => '0');
+    end function;
+
+    function fp_is_negative(value : fp32_t) return boolean is
+    begin
+        return value(31) = '1' and not fp_is_zero(value);
     end function;
 
     function fp_less(left_value, right_value : fp32_t) return boolean is

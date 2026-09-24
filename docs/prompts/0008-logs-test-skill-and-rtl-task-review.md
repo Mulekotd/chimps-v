@@ -13,14 +13,8 @@ Por fim, revise as implementações RTL e compare com o que ainda falta terminar
 
 ## Output
 
-Criei a skill [test-first-implementation](/.agents/skills/test-first-implementation/SKILL.md).
-Ela exige testes e execução de evidências a cada mudança observável, com rotas
-específicas para RTL/VHDL, integração de hardware, frontend/GUI e serviços/APIs.
+Criei a skill [test-first-implementation](/.agents/skills/test-first-implementation/SKILL.md). Ela exige testes e execução de evidências a cada mudança observável, com rotas específicas para RTL/VHDL, integração de hardware, frontend/GUI e serviços/APIs.
 
-Revisei o RTL e os testbenches contra [TASKS.md](/TASKS.md). Não havia novas
-caixas a marcar: as entregas existentes já estão assinaladas, enquanto os itens
-em aberto ainda dependem de partes reais ausentes, como `memory_bus`, integração
-das caches ao core, pipeline, RV32M no decoder/core, Zicsr e a extensão F completa.
+Revisei o RTL e os testbenches contra [TASKS.md](/TASKS.md). Não havia novas caixas a marcar: as entregas existentes já estão assinaladas, enquanto os itens em aberto ainda dependem de partes reais ausentes, como `memory_bus`, integração das caches ao core, pipeline, RV32M no decoder/core, Zicsr e a extensão F completa.
 
-Não foi possível executar a regressão neste ambiente porque Docker não está
-instalado; o fluxo previsto permanece `docker compose run --rm rtl`.
+Não foi possível executar a regressão neste ambiente porque Docker não está instalado; o fluxo previsto permanece `docker compose run --rm rtl`.

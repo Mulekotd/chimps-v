@@ -7,19 +7,19 @@ use work.chimps_pkg.ALL;
 -- reset, portanto uma imagem nova também invalida as caches do sistema.
 entity memory_backing_store is
     Port (
-        clk, rst : in STD_LOGIC;
-        load_valid : in STD_LOGIC;
-        load_address, load_data : in STD_LOGIC_VECTOR(31 downto 0);
-        load_mask : in STD_LOGIC_VECTOR(3 downto 0);
-        load_ready : out STD_LOGIC;
-        request_valid, request_write : in STD_LOGIC;
+        clk, rst                       : in STD_LOGIC;
+        load_valid                     : in STD_LOGIC;
+        load_address, load_data        : in STD_LOGIC_VECTOR(31 downto 0);
+        load_mask                      : in STD_LOGIC_VECTOR(3 downto 0);
+        load_ready                     : out STD_LOGIC;
+        request_valid, request_write   : in STD_LOGIC;
         request_address, request_wdata : in STD_LOGIC_VECTOR(31 downto 0);
-        request_wmask : in STD_LOGIC_VECTOR(3 downto 0);
-        request_ready : out STD_LOGIC;
-        request_rdata : out STD_LOGIC_VECTOR(31 downto 0);
-        request_error : out STD_LOGIC;
-        debug_address : in STD_LOGIC_VECTOR(31 downto 0);
-        debug_data : out STD_LOGIC_VECTOR(31 downto 0)
+        request_wmask                  : in STD_LOGIC_VECTOR(3 downto 0);
+        request_ready                  : out STD_LOGIC;
+        request_rdata                  : out STD_LOGIC_VECTOR(31 downto 0);
+        request_error                  : out STD_LOGIC;
+        debug_address                  : in STD_LOGIC_VECTOR(31 downto 0);
+        debug_data                     : out STD_LOGIC_VECTOR(31 downto 0)
     );
 end memory_backing_store;
 

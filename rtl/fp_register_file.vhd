@@ -13,7 +13,9 @@ entity fp_register_file is
         read_address1 : in STD_LOGIC_VECTOR(4 downto 0);
         read_address2 : in STD_LOGIC_VECTOR(4 downto 0);
         read_data1    : out STD_LOGIC_VECTOR(31 downto 0);
-        read_data2    : out STD_LOGIC_VECTOR(31 downto 0)
+        read_data2    : out STD_LOGIC_VECTOR(31 downto 0);
+        read_address3 : in STD_LOGIC_VECTOR(4 downto 0) := "00000";
+        read_data3    : out STD_LOGIC_VECTOR(31 downto 0) := (others => '0')
     );
 end fp_register_file;
 
@@ -34,4 +36,5 @@ begin
 
     read_data1 <= registers(to_integer(unsigned(read_address1)));
     read_data2 <= registers(to_integer(unsigned(read_address2)));
+    read_data3 <= registers(to_integer(unsigned(read_address3)));
 end Behavioral;

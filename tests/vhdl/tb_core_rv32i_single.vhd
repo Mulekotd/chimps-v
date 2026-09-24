@@ -11,7 +11,8 @@ architecture Behavioral of tb_core_rv32i_single is
     signal data_address, data_wdata, data_rdata : STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
     signal data_wmask : STD_LOGIC_VECTOR(3 downto 0);
     signal current_pc, current_instruction : STD_LOGIC_VECTOR(31 downto 0);
-    signal retired, halted, illegal_instruction : STD_LOGIC;
+    signal retired, halted, illegal_instruction, trap : STD_LOGIC;
+    signal trap_cause : STD_LOGIC_VECTOR(31 downto 0);
 begin
     dut : entity work.core_rv32i_single
         port map (
@@ -22,7 +23,7 @@ begin
             data_wdata => data_wdata, data_wmask => data_wmask, data_ready => data_ready,
             data_error => data_error, data_rdata => data_rdata, current_pc => current_pc,
             current_instruction => current_instruction, retired => retired, halted => halted,
-            illegal_instruction => illegal_instruction, fp_fflags => open);
+            illegal_instruction => illegal_instruction, trap => trap, trap_cause => trap_cause, fp_fflags => open);
 
     clk <= not clk after 5 ns;
     instruction_ready <= instruction_valid;
