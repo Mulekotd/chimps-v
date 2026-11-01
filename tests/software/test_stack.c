@@ -45,5 +45,6 @@ static void test_lifo_bounds_and_errors(void) {
 int main(void) {
     test_rejects_invalid_initialization();
     test_lifo_bounds_and_errors();
+
     return 0;
 }

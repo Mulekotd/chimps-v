@@ -28,17 +28,14 @@ CONSTRAINTS:
 
 - O projeto será desenvolvido seguindo padrões de Test Driven Development e Spec Driven Development;
 - Prezamos por desempenho, então sempre que algo puder ser implementada como circuito digital, me informe;
-- A microarquitetura deve ser capaz de trabalhar com pontos flutuantes utilizando o padrão IEEE 754;
 - A CPU deve seguir o modelo de Von Neumann (Fetch, Decode, etc.);
 
 FEATURES:
 
-- CPU (ALU, FPU, Registradores, etc.)
+- CPU (ALU, Registradores, etc.)
 - Memória Primária (RAM);
 - Memória Cache;
 - Pipeline;
-- Buffering de I/O;
-- CLI (Interface de terminal).
 
 A princípio é isso, sinta-se livre para agregar valor ao projeto com mais detalhes.
 
@@ -46,6 +43,6 @@ A princípio é isso, sinta-se livre para agregar valor ao projeto com mais deta
 
 Estruturei o plano completo em [CONTEXT.md](/CONTEXT.md).
 
-Inclui arquitetura RV32IMF_Zicsr, pipeline de cinco estágios, RAM Von Neumann com I$/D$ sobre a mesma memória, MMIO/FIFOs, TUI, Docker, SDD/TDD, roteiro de validação, roadmap, riscos, métricas e critérios de aceite.
+Inclui arquitetura RV32IMF_Zicsr, pipeline de cinco estágios, RAM Von Neumann com I$/D$ sobre a mesma memória, Docker, SDD/TDD, roteiro de validação, roadmap, riscos, métricas e critérios de aceite.
 
 Também deixei explícito que a FPU deve ser circuito RTL e que conformidade `F` completa exige FMA, divisão e raiz — antes disso, o projeto deve declarar apenas um subconjunto FP experimental. As referências incluem a especificação RISC-V ratificada, IEEE 754-2019, testes arquiteturais oficiais e bibliografia fundamental. [RISC-V ISA](https://docs.riscv.org/reference/isa/), [IEEE 754](https://standards.ieee.org/ieee/754/6210/).

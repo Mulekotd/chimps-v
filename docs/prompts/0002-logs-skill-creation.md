@@ -5,7 +5,7 @@
 
 ## Prompt
 
-Quero que crie uma skill determinando isso, para que qualquer pessoa que esteja desenvolvendo nesse projeto tenha seus promts registrados em logs também.
+Quero que crie uma skill determinando isso, para que qualquer pessoa que esteja desenvolvendo nesse projeto tenha seus prompts registrados em logs também.
 
 ## Output
 

@@ -34,6 +34,7 @@ begin
             load_address <= std_logic_vector(to_unsigned(address, 32));
             load_data <= value;
             load_valid <= '1';
+
             wait until rising_edge(clk);
             assert load_ready = '1' report "loader did not accept an aligned RAM word" severity error;
         end procedure;
@@ -57,9 +58,11 @@ begin
         assert illegal_instruction = '0' report "valid simplified-RV32I program was rejected" severity error;
         debug_address <= x"00000040";
         wait for 1 ns;
+
         assert debug_data = x"00000008" report "RAW stall, store, load, or write-through failed" severity error;
         debug_address <= x"00000044";
         wait for 1 ns;
+
         assert debug_data = x"00000000" report "taken BEQ did not flush the younger store" severity error;
         assert unsigned(cache_misses) > 0 report "program must demonstrate at least one cache miss" severity error;
         assert unsigned(cache_hits) > 0 report "program must demonstrate at least one cache hit" severity error;

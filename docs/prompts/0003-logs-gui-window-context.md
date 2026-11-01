@@ -5,7 +5,7 @@
 
 ## Prompt
 
-Vamos remodelar algumas coisas. O projeto não terá apenas um TUI, meu colega pretende implementar de fato uma interface de usuário (GUI).
+Vamos remodelar algumas coisas. O projeto não terá uma interface de usuário (GUI).
 
 Esta interface irá desenhar de maneira mais sofisticada o ciclo de execução sequêncial do processador. Mostrar todo o caminho de acesso em memória em um esquemático do Processador + Memória Principal além de outras interações que forem interessantes. Portanto, preciso que atualize o documento de CONTEXT.md para atender a essa nova especificação.
 

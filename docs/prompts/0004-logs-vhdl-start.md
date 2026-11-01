@@ -16,9 +16,8 @@ Comece por um vertical slice mínimo de `RV32I`, validando o caminho completo de
 3. Núcleo RV32I não pipeline com `ADDI`, `ADD`, `SUB`, `LW`, `SW` e `BEQ`.
 4. Pipeline IF/ID/EX/MEM/WB e seus registradores de estágio.
 5. Forwarding, hazards, stalls e flushes.
-6. I-cache, D-cache, MMIO e FIFOs.
-7. MUL/DIV e, por último, FPU IEEE 754.
-8. Snapshots de ciclo para a GUI desde o início, com a janela implementada depois do primeiro trace correto.
+6. I-cache, D-cache.
+7. Snapshots de ciclo para a GUI desde o início, com a janela implementada depois do primeiro trace correto.
 
 O primeiro conjunto de arquivos deve conter `chimps_pkg.vhd`, `pc_reg.vhd`, `register_file.vhd`, `alu.vhd`, `imm_gen.vhd`, `decoder.vhd`, `ram.vhd`, `core_rv32i_single.vhd` e seus testbenches. O primeiro programa de aceitação deve executar `addi`, `add`, `lw`, `sw` e `beq`, verificando PC, registradores, RAM e quantidade de ciclos.
 
